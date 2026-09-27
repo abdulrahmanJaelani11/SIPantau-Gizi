@@ -131,6 +131,20 @@ a {
   padding: 1.1rem 1rem;
 }
 
+/* Label pemisah grup menu di sidebar (misalnya "Utilitas", "Data & Laporan") */
+.nav-label {
+  padding: 0.6rem 0.9rem 0.2rem;
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sidebar-nav .nav-link {
   display: flex;
   align-items: center;
@@ -1027,6 +1041,11 @@ html[data-theme="dark"] .profile-button .avatar-sm {
   body.sidebar-mini .sidebar-nav .nav-link:hover,
   body.sidebar-mini .sidebar-nav .nav-link:focus {
     transform: none;
+  }
+
+  body.sidebar-mini .nav-label,
+  body.sidebar-mini .sidebar-user {
+    display: none;
   }
 }
 
