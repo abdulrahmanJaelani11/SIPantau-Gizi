@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /sipantau-gizi/
+
+# Shortcut URL umum
+RewriteRule ^auth/login/?$ modules/auth/login.php [L,QSA]
+RewriteRule ^login/?$ modules/auth/login.php [L,QSA]
+RewriteRule ^auth/logout/?$ modules/auth/logout.php [L,QSA]
+RewriteRule ^logout/?$ modules/auth/logout.php [L,QSA]
+RewriteRule ^dashboard/?$ modules/dashboard/index.php [L,QSA]
+RewriteRule ^utilitas/pengguna/?$ modules/utilitas/pengguna/index.php [L,QSA]
+RewriteRule ^pengguna/?$ modules/utilitas/pengguna/index.php [L,QSA]
+RewriteRule ^utilitas/role/?$ modules/utilitas/role/index.php [L,QSA]
+RewriteRule ^role/?$ modules/utilitas/role/index.php [L,QSA]
+</IfModule>
