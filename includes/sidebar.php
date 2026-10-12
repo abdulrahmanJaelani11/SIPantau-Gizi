@@ -13,33 +13,92 @@
  */
 
 // ============================================================
-// Daftar Menu Sidebar (Statis)
+// Daftar Menu Sidebar (Dinamis Berdasarkan Otorisasi Role)
 // ============================================================
-// Struktur setiap item:
-//   'type'  => 'link' (default) atau 'label' (pemisah grup)
-//   'slug'  => slug unik menu (cocokkan dengan $current_slug)
-//   'nama'  => teks yang ditampilkan
-//   'icon'  => class Bootstrap Icon (tanpa prefix 'bi ')
-//   'url'   => URL tujuan (pakai base_url() agar path tidak pecah)
-//
-// Fase 4: array ini akan diganti hasil query dari tabel `menus` + `role_menu`
+require_once ROOT_PATH . '/src/Otorisasi.php';
 
-$sidebar_menus = [
-    ['slug' => 'dashboard',    'nama' => 'Dashboard',          'icon' => 'bi-speedometer2',  'url' => base_url('modules/dashboard/index.php')],
+$current_role_id = (int)($_SESSION['role_id'] ?? 0);
+$sidebar_menus = [];
 
-    ['type' => 'label', 'nama' => 'Data & Laporan'],
-    ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'], // TODO: koordinasi tim
-    ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => '#'], // TODO: koordinasi tim
-    ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'], // TODO: koordinasi tim
+if ($pdo !== null) {
+    try {
+        if ($current_role_id === Otorisasi::ADMIN_ROLE_ID) {
+            $stmt = $pdo->query("
+                SELECT id_menu, nama_menu, slug, icon, url, kategori, urutan
+                FROM menu
+                ORDER BY 
+                    CASE kategori
+                        WHEN 'Utama' THEN 1
+                        WHEN 'Data & Laporan' THEN 2
+                        WHEN 'Master Data' THEN 3
+                        WHEN 'Utilitas' THEN 4
+                        ELSE 5
+                    END,
+                    urutan ASC
+            ");
+            $db_menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT m.id_menu, m.nama_menu, m.slug, m.icon, m.url, m.kategori, m.urutan
+                FROM menu m
+                JOIN role_menu rm ON m.id_menu = rm.id_menu
+                WHERE rm.id_role = ?
+                ORDER BY 
+                    CASE m.kategori
+                        WHEN 'Utama' THEN 1
+                        WHEN 'Data & Laporan' THEN 2
+                        WHEN 'Master Data' THEN 3
+                        WHEN 'Utilitas' THEN 4
+                        ELSE 5
+                    END,
+                    m.urutan ASC
+            ");
+            $stmt->execute([$current_role_id]);
+            $db_menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
 
-    ['type' => 'label', 'nama' => 'Master Data'],
-    ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => '#'], // TODO: koordinasi tim
-    ['slug' => 'puskesmas',    'nama' => 'Data Puskesmas',     'icon' => 'bi-building',      'url' => '#'], // TODO: koordinasi tim
+        $current_category = null;
+        foreach ($db_menus as $m) {
+            $cat = $m['kategori'] ?? 'Utama';
+            if ($cat !== 'Utama' && $cat !== $current_category) {
+                $sidebar_menus[] = ['type' => 'label', 'nama' => $cat];
+                $current_category = $cat;
+            }
 
-    ['type' => 'label', 'nama' => 'Utilitas'],
-    ['slug' => 'pengguna',     'nama' => 'Daftar Pengguna',    'icon' => 'bi-people',        'url' => base_url('modules/utilitas/pengguna/index.php')],
-    ['slug' => 'role',         'nama' => 'Role & Otorisasi',   'icon' => 'bi-shield-lock',   'url' => base_url('modules/utilitas/role/index.php')],
-];
+            $url = $m['url'] ?? '#';
+            if ($url !== '#' && !str_starts_with($url, 'http')) {
+                $url = base_url($url);
+            }
+
+            $sidebar_menus[] = [
+                'type' => 'link',
+                'slug' => $m['slug'],
+                'nama' => $m['nama_menu'],
+                'icon' => $m['icon'] ?? 'bi-circle',
+                'url'  => $url
+            ];
+        }
+    } catch (PDOException $e) {
+        $sidebar_menus = [];
+    }
+}
+
+// Fallback jika menu kosong atau belum ada koneksi DB
+if (empty($sidebar_menus)) {
+    $sidebar_menus = [
+        ['slug' => 'dashboard',    'nama' => 'Dashboard',          'icon' => 'bi-speedometer2',  'url' => base_url('modules/dashboard/index.php')],
+        ['type' => 'label', 'nama' => 'Data & Laporan'],
+        ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
+        ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => '#'],
+        ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'],
+        ['type' => 'label', 'nama' => 'Master Data'],
+        ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => '#'],
+        ['slug' => 'puskesmas',    'nama' => 'Data Puskesmas',     'icon' => 'bi-building',      'url' => '#'],
+        ['type' => 'label', 'nama' => 'Utilitas'],
+        ['slug' => 'pengguna',     'nama' => 'Daftar Pengguna',    'icon' => 'bi-people',        'url' => base_url('modules/utilitas/pengguna/index.php')],
+        ['slug' => 'role',         'nama' => 'Role & Otorisasi',   'icon' => 'bi-shield-lock',   'url' => base_url('modules/utilitas/role/index.php')],
+    ];
+}
 
 // Data user untuk widget sidebar bawah
 $sidebar_user_nama = $_SESSION['user_nama'] ?? 'Pengguna';

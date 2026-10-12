@@ -3,14 +3,16 @@
  * Modul Utilitas — Daftar Pengguna
  * =================================
  * Halaman utama manajemen akun pengguna di SiPantau Gizi.
- * Menampilkan daftar pengguna, metrik ringkasan, filter, serta aksi tambah/edit/hapus.
+ * Disesuaikan dengan arsitektur database db_sipantau_gizi (tabel user dan role).
  */
 
 require_once __DIR__ . '/../../../config/app.php';
 require_once ROOT_PATH . '/includes/auth-guard.php';
 
-// Pastikan hanya role Admin yang bisa mengelola akun pengguna
-if (($_SESSION['user_role_nama'] ?? '') !== 'Admin' && ($_SESSION['role_id'] ?? 0) != 1) {
+// Pastikan hanya role Admin yang bisa mengelola akun pengguna (id_role = 4)
+$user_role = $_SESSION['user_role_nama'] ?? '';
+$user_role_id = $_SESSION['role_id'] ?? 0;
+if (strcasecmp($user_role, 'Admin') !== 0 && $user_role_id != 4) {
     set_flash('danger', 'Akses ditolak. Halaman ini hanya untuk Administrator.');
     redirect(base_url('modules/dashboard/index.php'));
 }
@@ -30,10 +32,10 @@ $search        = trim($_GET['search'] ?? '');
 $filter_role   = trim($_GET['role'] ?? '');
 $filter_status = trim($_GET['status'] ?? '');
 
-// Ambil daftar role untuk dropdown filter
+// Ambil daftar role untuk dropdown filter dari tabel role
 $roles_list = [];
 try {
-    $roles_stmt = $pdo->query("SELECT id, nama_role FROM roles ORDER BY id ASC");
+    $roles_stmt = $pdo->query("SELECT id_role, nama_role FROM role ORDER BY id_role ASC");
     $roles_list = $roles_stmt->fetchAll();
 } catch (PDOException $e) {
     $roles_list = [];
@@ -51,9 +53,9 @@ try {
     $stats_stmt = $pdo->query("
         SELECT 
             COUNT(*) AS total,
-            COUNT(CASE WHEN status = 'aktif' THEN 1 END) AS active_count,
-            COUNT(CASE WHEN status = 'nonaktif' THEN 1 END) AS inactive_count
-        FROM users
+            COUNT(CASE WHEN LOWER(status) = 'aktif' THEN 1 END) AS active_count,
+            COUNT(CASE WHEN LOWER(status) != 'aktif' THEN 1 END) AS inactive_count
+        FROM user
     ");
     $stats = $stats_stmt->fetch();
     if ($stats) {
@@ -72,19 +74,20 @@ $where_clauses = ['1=1'];
 $params        = [];
 
 if ($search !== '') {
-    $where_clauses[] = '(u.nama LIKE ? OR u.email LIKE ?)';
+    $where_clauses[] = '(u.nama LIKE ? OR u.username LIKE ? OR u.email LIKE ?)';
+    $params[] = '%' . $search . '%';
     $params[] = '%' . $search . '%';
     $params[] = '%' . $search . '%';
 }
 
 if ($filter_role !== '') {
-    $where_clauses[] = 'u.role_id = ?';
+    $where_clauses[] = 'u.id_role = ?';
     $params[] = $filter_role;
 }
 
 if ($filter_status !== '') {
-    $where_clauses[] = 'u.status = ?';
-    $params[] = $filter_status;
+    $where_clauses[] = 'LOWER(u.status) = ?';
+    $params[] = strtolower($filter_status);
 }
 
 $where_sql = implode(' AND ', $where_clauses);
@@ -92,12 +95,15 @@ $users = [];
 
 try {
     $sql = "
-        SELECT u.id, u.nama, u.email, u.status, u.created_at,
-               r.id AS role_id, r.nama_role
-        FROM users u
-        LEFT JOIN roles r ON u.role_id = r.id
+        SELECT u.id_user, u.nama, u.username, u.email, u.no_telepon, u.status, u.created_at,
+               r.id_role, r.nama_role,
+               p.nama_posyandu, k.nama_puskesmas
+        FROM user u
+        LEFT JOIN role r ON u.id_role = r.id_role
+        LEFT JOIN posyandu p ON u.id_posyandu = p.id_posyandu
+        LEFT JOIN puskesmas k ON u.id_puskesmas = k.id_puskesmas
         WHERE {$where_sql}
-        ORDER BY u.id ASC
+        ORDER BY u.id_user ASC
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
@@ -106,15 +112,28 @@ try {
     set_flash('danger', 'Gagal memuat data pengguna: ' . $e->getMessage());
 }
 
-// Helper badge role
+// Query parameter untuk tautan ekspor
+$export_query = http_build_query(array_filter([
+    'search' => $search,
+    'role'   => $filter_role,
+    'status' => $filter_status,
+]));
+
+// Helper badge role (kompatibel PHP 7.4+)
 function get_role_badge_class(?string $role_name): string {
-    return match ($role_name) {
-        'Admin'              => 'text-bg-primary',
-        'Kader'              => 'text-bg-info',
-        'Petugas Puskesmas'  => 'text-bg-success',
-        'Koordinator Desa'   => 'text-bg-warning',
-        default              => 'text-bg-secondary',
-    };
+    switch (trim($role_name ?? '')) {
+        case 'Admin':
+            return 'text-bg-primary';
+        case 'Kader':
+            return 'text-bg-info';
+        case 'Bidan/Petugas Puskesmas':
+        case 'Petugas Puskesmas':
+            return 'text-bg-success';
+        case 'Koordinator Desa':
+            return 'text-bg-warning';
+        default:
+            return 'text-bg-secondary';
+    }
 }
 
 // Helper inisial nama untuk avatar
@@ -141,7 +160,27 @@ require_once ROOT_PATH . '/includes/header.php';
       <p class="text-muted mb-0">Kelola akun pengguna, penugasan role, dan status aktif akun.</p>
     </div>
   </div>
-  <div class="heading-actions">
+  <div class="heading-actions d-flex gap-2">
+    <!-- Dropdown Ekspor Data -->
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1" aria-hidden="true"></i> Ekspor Data
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <li><h6 class="dropdown-header small">Format Ekspor</h6></li>
+        <li>
+          <a class="dropdown-item small" href="<?= base_url('modules/utilitas/pengguna/ekspor.php?format=csv' . (!empty($export_query) ? '&' . $export_query : '')) ?>">
+            <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i> Ekspor ke CSV / Excel (.csv)
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item small" target="_blank" href="<?= base_url('modules/utilitas/pengguna/ekspor.php?format=print' . (!empty($export_query) ? '&' . $export_query : '')) ?>">
+            <i class="bi bi-printer text-primary me-2"></i> Cetak Dokumen / PDF
+          </a>
+        </li>
+      </ul>
+    </div>
+
     <a class="btn btn-primary btn-sm" href="<?= base_url('modules/utilitas/pengguna/tambah.php') ?>">
       <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Tambah Pengguna
     </a>
@@ -220,14 +259,14 @@ require_once ROOT_PATH . '/includes/header.php';
       <div class="input-group input-group-sm" style="min-width: 220px;">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
         <input type="search" name="search" class="form-control"
-               placeholder="Cari nama atau email..."
+               placeholder="Cari nama, username, email..."
                value="<?= e($search) ?>" aria-label="Cari pengguna">
       </div>
 
       <select name="role" class="form-select form-select-sm" style="width: auto;" aria-label="Filter role">
         <option value="">Semua Role</option>
         <?php foreach ($roles_list as $r): ?>
-          <option value="<?= $r['id'] ?>" <?= (string)$filter_role === (string)$r['id'] ? 'selected' : '' ?>>
+          <option value="<?= $r['id_role'] ?>" <?= (string)$filter_role === (string)$r['id_role'] ? 'selected' : '' ?>>
             <?= e($r['nama_role']) ?>
           </option>
         <?php endforeach; ?>
@@ -235,8 +274,8 @@ require_once ROOT_PATH . '/includes/header.php';
 
       <select name="status" class="form-select form-select-sm" style="width: auto;" aria-label="Filter status">
         <option value="">Semua Status</option>
-        <option value="aktif" <?= $filter_status === 'aktif' ? 'selected' : '' ?>>Aktif</option>
-        <option value="nonaktif" <?= $filter_status === 'nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
+        <option value="aktif" <?= strtolower($filter_status) === 'aktif' ? 'selected' : '' ?>>Aktif</option>
+        <option value="nonaktif" <?= strtolower($filter_status) === 'nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
       </select>
 
       <button type="submit" class="btn btn-outline-primary btn-sm">
@@ -258,6 +297,7 @@ require_once ROOT_PATH . '/includes/header.php';
           <th scope="col" style="width: 50px;">#</th>
           <th scope="col">Pengguna</th>
           <th scope="col">Role</th>
+          <th scope="col">Penugasan</th>
           <th scope="col">Status</th>
           <th scope="col">Terdaftar</th>
           <th scope="col" class="text-end" style="min-width: 140px;">Aksi</th>
@@ -266,7 +306,7 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($users)): ?>
           <tr>
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="7" class="text-center py-5 text-muted">
               <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
               <p class="mb-1 fw-semibold">Tidak ada pengguna yang ditemukan</p>
               <small>Coba sesuaikan kata kunci pencarian atau filter yang Anda pilih.</small>
@@ -275,7 +315,8 @@ require_once ROOT_PATH . '/includes/header.php';
         <?php else: ?>
           <?php foreach ($users as $index => $u): ?>
             <?php 
-              $is_current_user = ((int)$u['id'] === (int)$_SESSION['user_id']);
+              $is_current_user = ((int)$u['id_user'] === (int)$_SESSION['user_id']);
+              $is_active = (strcasecmp($u['status'], 'aktif') === 0);
             ?>
             <tr>
               <td class="text-muted small"><?= $index + 1 ?></td>
@@ -292,7 +333,12 @@ require_once ROOT_PATH . '/includes/header.php';
                         <span class="badge text-bg-light border text-primary ms-1" style="font-size: 0.7rem;">Anda</span>
                       <?php endif; ?>
                     </div>
-                    <div class="text-muted small"><?= e($u['email']) ?></div>
+                    <div class="text-muted small">
+                      <span class="text-primary fw-medium">@<?= e($u['username']) ?></span>
+                      <?php if (!empty($u['email'])): ?>
+                        &bull; <?= e($u['email']) ?>
+                      <?php endif; ?>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -302,7 +348,16 @@ require_once ROOT_PATH . '/includes/header.php';
                 </span>
               </td>
               <td>
-                <?php if ($u['status'] === 'aktif'): ?>
+                <?php if (!empty($u['nama_posyandu'])): ?>
+                  <span class="small d-block"><i class="bi bi-hospital me-1 text-muted"></i><?= e($u['nama_posyandu']) ?></span>
+                <?php elseif (!empty($u['nama_puskesmas'])): ?>
+                  <span class="small d-block"><i class="bi bi-building me-1 text-muted"></i><?= e($u['nama_puskesmas']) ?></span>
+                <?php else: ?>
+                  <span class="text-muted small">—</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <?php if ($is_active): ?>
                   <span class="badge text-bg-success">
                     <i class="bi bi-check-circle-fill me-1"></i>Aktif
                   </span>
@@ -314,12 +369,12 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
               <td>
                 <span class="small text-muted" title="<?= e($u['created_at']) ?>">
-                  <?= date('d M Y, H:i', strtotime($u['created_at'])) ?>
+                  <?= !empty($u['created_at']) ? date('d M Y', strtotime($u['created_at'])) : '—' ?>
                 </span>
               </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Pengguna">
-                  <a href="<?= base_url('modules/utilitas/pengguna/edit.php?id=' . $u['id']) ?>"
+                  <a href="<?= base_url('modules/utilitas/pengguna/edit.php?id=' . $u['id_user']) ?>"
                      class="btn btn-outline-primary"
                      title="Edit Pengguna">
                     <i class="bi bi-pencil-square"></i>
@@ -331,9 +386,9 @@ require_once ROOT_PATH . '/includes/header.php';
                             class="btn btn-outline-danger btn-delete-user"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteModal"
-                            data-user-id="<?= $u['id'] ?>"
+                            data-user-id="<?= $u['id_user'] ?>"
                             data-user-nama="<?= e($u['nama']) ?>"
-                            data-user-email="<?= e($u['email']) ?>"
+                            data-user-username="<?= e($u['username']) ?>"
                             title="Hapus Pengguna">
                       <i class="bi bi-trash"></i>
                       <span class="d-none d-md-inline ms-1">Hapus</span>
@@ -370,7 +425,7 @@ require_once ROOT_PATH . '/includes/header.php';
           <p class="mb-2">Apakah Anda yakin ingin menghapus akun pengguna berikut?</p>
           <div class="p-3 bg-light rounded border mb-2">
             <div class="fw-bold" id="deleteUserNama">—</div>
-            <div class="text-muted small" id="deleteUserEmail">—</div>
+            <div class="text-muted small">Username: <span id="deleteUserUsername">—</span></div>
           </div>
           <p class="text-danger small mb-0">
             <i class="bi bi-info-circle me-1"></i> Tindakan ini tidak dapat dibatalkan. Riwayat data pengguna ini akan dihapus dari sistem.
@@ -398,11 +453,11 @@ document.addEventListener("DOMContentLoaded", function () {
       var button = event.relatedTarget;
       var userId = button.getAttribute("data-user-id");
       var userNama = button.getAttribute("data-user-nama");
-      var userEmail = button.getAttribute("data-user-email");
+      var userUsername = button.getAttribute("data-user-username");
 
       document.getElementById("deleteUserId").value = userId;
       document.getElementById("deleteUserNama").textContent = userNama;
-      document.getElementById("deleteUserEmail").textContent = userEmail;
+      document.getElementById("deleteUserUsername").textContent = "@" + userUsername;
     });
   }
 });

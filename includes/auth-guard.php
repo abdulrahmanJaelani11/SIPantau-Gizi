@@ -26,11 +26,25 @@ if (empty($_SESSION['user_id'])) {
 }
 
 // ============================================================
-// Fase 4: Tambahkan pengecekan otorisasi di sini
+// Otorisasi Akses Menu (Role-Based Access Control)
 // ============================================================
-// Contoh nanti:
-//   require_once ROOT_PATH . '/src/Otorisasi.php';
-//   if (!bolehAkses($_SESSION['role_id'], $current_slug)) {
-//       set_flash('danger', 'Anda tidak memiliki akses ke halaman ini.');
-//       redirect(base_url('modules/dashboard/index.php'));
-//   }
+require_once ROOT_PATH . '/src/Otorisasi.php';
+
+// Jika variabel $current_slug sudah diset sebelum include auth-guard.php
+if (!empty($current_slug) && !bolehAkses($_SESSION['role_id'] ?? 0, $current_slug)) {
+    set_flash('danger', 'Akses ditolak. Anda tidak memiliki izin untuk mengakses halaman ini.');
+    redirect(base_url('modules/dashboard/index.php'));
+}
+
+/**
+ * Helper untuk memeriksa hak akses secara manual di halaman modul jika $current_slug
+ * didefinisikan setelah auth-guard.php di-include.
+ */
+function cek_akses_menu(?string $slug): void
+{
+    if (!empty($slug) && !bolehAkses($_SESSION['role_id'] ?? 0, $slug)) {
+        set_flash('danger', 'Akses ditolak. Anda tidak memiliki izin untuk mengakses halaman ini.');
+        redirect(base_url('modules/dashboard/index.php'));
+    }
+}
+

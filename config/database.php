@@ -9,12 +9,12 @@
  *          Jangan require langsung dari halaman modul.
  */
 
-// TODO: koordinasi tim — pastikan semua anggota pakai nama database yang sama
-$db_host = 'localhost';
-$db_port = '3306';
-$db_name = 'sipantau_gizi';
-$db_user = 'root';
-$db_pass = '';
+// Konfigurasi database dinamis (Mendukung Docker & XAMPP lokal)
+$db_host = getenv('DB_HOST') ?: 'localhost';
+$db_port = getenv('DB_PORT') ?: '3306';
+$db_name = getenv('DB_NAME') ?: 'db_sipantau_gizi';
+$db_user = getenv('DB_USER') ?: 'root';
+$db_pass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
 
 $db_dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4";
 
