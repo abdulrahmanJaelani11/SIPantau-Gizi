@@ -89,7 +89,7 @@ if (empty($sidebar_menus)) {
         ['slug' => 'dashboard',    'nama' => 'Dashboard',          'icon' => 'bi-speedometer2',  'url' => base_url('modules/dashboard/index.php')],
         ['type' => 'label', 'nama' => 'Data & Laporan'],
         ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
-        ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => '#'],
+        ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => base_url('modules/pengukuran/index.php')],
         ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'],
         ['type' => 'label', 'nama' => 'Master Data'],
         ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => '#'],
