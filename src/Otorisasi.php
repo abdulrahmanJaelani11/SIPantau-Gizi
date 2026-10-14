@@ -322,12 +322,13 @@ class Otorisasi
                         INSERT INTO menu (id_menu, nama_menu, slug, icon, url, kategori, urutan) VALUES
                         (1, 'Dashboard', 'dashboard', 'bi-speedometer2', 'modules/dashboard/index.php', 'Utama', 1),
                         (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
-                        (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', '#', 'Data & Laporan', 3),
-                        (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 4),
-                        (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 5),
-                        (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 6),
-                        (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 7),
-                        (8, 'Role & Otorisasi', 'role', 'bi-shield-lock', 'modules/utilitas/role/index.php', 'Utilitas', 8)
+                        (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', 'modules/pengukuran/index.php', 'Data & Laporan', 3),
+                        (9, 'Jadwal & Kunjungan', 'jadwal', 'bi-calendar-check', 'modules/jadwal/index.php', 'Data & Laporan', 4),
+                        (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 5),
+                        (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 6),
+                        (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 7),
+                        (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 8),
+                        (8, 'Role & Otorisasi', 'role', 'bi-shield-lock', 'modules/utilitas/role/index.php', 'Utilitas', 9)
                         ON DUPLICATE KEY UPDATE nama_menu=VALUES(nama_menu);
                     ");
                 }
@@ -337,10 +338,10 @@ class Otorisasi
                 if ($rmCount === 0) {
                     $db->exec("
                         INSERT IGNORE INTO role_menu (id_role, id_menu) VALUES
-                        (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6), (4, 7), (4, 8),
-                        (1, 1), (1, 2), (1, 3), (1, 5),
-                        (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6),
-                        (3, 1), (3, 4), (3, 5), (3, 6);
+                        (4, 1), (4, 2), (4, 3), (4, 9), (4, 4), (4, 5), (4, 6), (4, 7), (4, 8),
+                        (1, 1), (1, 2), (1, 3), (1, 9), (1, 5),
+                        (2, 1), (2, 2), (2, 3), (2, 9), (2, 4), (2, 5), (2, 6),
+                        (3, 1), (3, 9), (3, 4), (3, 5), (3, 6);
                     ");
                 }
             } catch (Exception $ign) {

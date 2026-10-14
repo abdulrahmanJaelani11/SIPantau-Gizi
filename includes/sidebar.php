@@ -90,6 +90,7 @@ if (empty($sidebar_menus)) {
         ['type' => 'label', 'nama' => 'Data & Laporan'],
         ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
         ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => base_url('modules/pengukuran/index.php')],
+        ['slug' => 'jadwal',       'nama' => 'Jadwal & Kunjungan', 'icon' => 'bi-calendar-check','url' => base_url('modules/jadwal/index.php')],
         ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'],
         ['type' => 'label', 'nama' => 'Master Data'],
         ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => '#'],
