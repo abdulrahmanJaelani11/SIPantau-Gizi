@@ -264,7 +264,6 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table align-middle mb-0" id="puskesmasTable">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 50px;">#</th>
           <th scope="col" style="min-width: 220px;">Nama Puskesmas</th>
           <th scope="col" style="min-width: 180px;">Wilayah Kerja</th>
           <th scope="col">Alamat Lengkap</th>
@@ -277,7 +276,7 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($puskesmas_data)): ?>
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">
+            <td colspan="7" class="text-center py-5 text-muted">
               <i class="bi bi-building-slash fs-1 d-block mb-2 text-secondary opacity-50"></i>
               Tidak ada data Puskesmas yang sesuai dengan filter pencarian.
             </td>
@@ -288,10 +287,7 @@ require_once ROOT_PATH . '/includes/header.php';
             $pet_count = (int)$p['petugas_count'];
           ?>
             <tr>
-              <!-- 1. Nomor -->
-              <td class="text-muted small"><?= $idx + 1 ?></td>
-
-              <!-- 2. Nama Puskesmas -->
+              <!-- 1. Nama Puskesmas -->
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="d-inline-flex p-2 rounded-2 bg-primary-subtle text-primary">

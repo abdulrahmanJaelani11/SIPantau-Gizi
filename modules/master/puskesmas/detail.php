@@ -207,7 +207,6 @@ require_once ROOT_PATH . '/includes/header.php';
         <table class="table table-hover align-middle mb-0 small">
           <thead class="table-light">
             <tr>
-              <th style="width: 40px;">#</th>
               <th>Nama Posyandu</th>
               <th>Alamat / RW</th>
               <th>Kelurahan</th>
@@ -217,14 +216,13 @@ require_once ROOT_PATH . '/includes/header.php';
           <tbody>
             <?php if (empty($posyandu_list)): ?>
               <tr>
-                <td colspan="5" class="text-center py-4 text-muted">
+                <td colspan="4" class="text-center py-4 text-muted">
                   Belum ada data Posyandu yang dibina oleh Puskesmas ini.
                 </td>
               </tr>
             <?php else: ?>
               <?php foreach ($posyandu_list as $i => $pos): ?>
                 <tr>
-                  <td class="text-muted"><?= $i + 1 ?></td>
                   <td class="fw-semibold text-dark">
                     <i class="bi bi-hospital text-primary me-1"></i>
                     <?= e($pos['nama_posyandu']) ?>
