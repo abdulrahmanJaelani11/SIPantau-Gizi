@@ -85,8 +85,12 @@ if ($format === 'print') {
       <title>Cetak Data Pengguna — <?= e(APP_NAME) ?></title>
       <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
       <link rel="stylesheet" href="<?= asset('vendors/bootstrap-icons/bootstrap-icons.css') ?>">
+      <!-- Google Fonts: Poppins -->
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
       <style>
-        body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; background: #fff; }
+        body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: #1f2937; background: #fff; }
         .print-header { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; }
         .table th { background-color: #f8fafc !important; }
         @media print {
@@ -139,7 +143,6 @@ if ($format === 'print') {
           <table class="table table-bordered table-striped table-sm align-middle small">
             <thead>
               <tr>
-                <th style="width: 40px;" class="text-center">#</th>
                 <th>Nama Lengkap</th>
                 <th>Username</th>
                 <th>Email</th>
@@ -153,10 +156,10 @@ if ($format === 'print') {
             <tbody>
               <?php if (empty($users)): ?>
                 <tr>
-                  <td colspan="9" class="text-center py-3 text-muted">Tidak ada data pengguna ditemukan.</td>
+                  <td colspan="8" class="text-center py-3 text-muted">Tidak ada data pengguna ditemukan.</td>
                 </tr>
               <?php else: ?>
-                <?php foreach ($users as $i => $u): 
+                <?php foreach ($users as $u): 
                   $penugasan = [];
                   if (!empty($u['nama_posyandu'])) $penugasan[] = $u['nama_posyandu'];
                   if (!empty($u['nama_puskesmas'])) $penugasan[] = $u['nama_puskesmas'];
@@ -164,7 +167,6 @@ if ($format === 'print') {
                   $penugasan_text = !empty($penugasan) ? implode(', ', $penugasan) : '-';
                 ?>
                   <tr>
-                    <td class="text-center"><?= $i + 1 ?></td>
                     <td class="fw-semibold"><?= e($u['nama']) ?></td>
                     <td>@<?= e($u['username']) ?></td>
                     <td><?= e($u['email'] ?: '-') ?></td>
