@@ -294,7 +294,6 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table align-middle mb-0" id="usersTable">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 50px;">#</th>
           <th scope="col">Pengguna</th>
           <th scope="col">Role</th>
           <th scope="col">Penugasan</th>
@@ -306,20 +305,19 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($users)): ?>
           <tr>
-            <td colspan="7" class="text-center py-5 text-muted">
+            <td colspan="6" class="text-center py-5 text-muted">
               <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
               <p class="mb-1 fw-semibold">Tidak ada pengguna yang ditemukan</p>
               <small>Coba sesuaikan kata kunci pencarian atau filter yang Anda pilih.</small>
             </td>
           </tr>
         <?php else: ?>
-          <?php foreach ($users as $index => $u): ?>
+          <?php foreach ($users as $u): ?>
             <?php 
               $is_current_user = ((int)$u['id_user'] === (int)$_SESSION['user_id']);
               $is_active = (strcasecmp($u['status'], 'aktif') === 0);
             ?>
             <tr>
-              <td class="text-muted small"><?= $index + 1 ?></td>
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center text-white fw-bold bg-primary bg-gradient"

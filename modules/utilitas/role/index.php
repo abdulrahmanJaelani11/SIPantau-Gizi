@@ -209,7 +209,6 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table align-middle mb-0" id="rolesTable">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 50px;">#</th>
           <th scope="col" style="min-width: 180px;">Nama Role</th>
           <th scope="col" style="min-width: 240px;">Deskripsi Peran</th>
           <th scope="col" style="width: 130px;" class="text-center">Pengguna</th>
@@ -220,13 +219,13 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($roles)): ?>
           <tr>
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="5" class="text-center py-5 text-muted">
               <i class="bi bi-shield-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
               Tidak ada data role yang sesuai dengan filter pencarian.
             </td>
           </tr>
         <?php else: ?>
-          <?php foreach ($roles as $idx => $role): 
+          <?php foreach ($roles as $role): 
             $is_admin = ((int)$role['id_role'] === Otorisasi::ADMIN_ROLE_ID || strcasecmp($role['nama_role'], 'Admin') === 0);
             $is_system = Otorisasi::isSystemRole((int)$role['id_role']);
             $user_count = (int)$role['user_count'];
@@ -239,10 +238,7 @@ require_once ROOT_PATH . '/includes/header.php';
             }
           ?>
             <tr>
-              <!-- 1. Nomor urut -->
-              <td class="text-muted small"><?= $idx + 1 ?></td>
-
-              <!-- 2. Nama Role & Badge -->
+              <!-- 1. Nama Role & Badge -->
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge <?= Otorisasi::getBadgeClass($role['nama_role']) ?> px-2 py-1 fs-6">
