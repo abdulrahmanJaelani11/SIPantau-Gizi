@@ -1,5 +1,12 @@
 USE `db_sipantau_gizi`;
 
+-- Tambah kolom dusun/RW jika database lama belum memilikinya.
+SET @has_dusun_rw = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posyandu' AND COLUMN_NAME = 'dusun_rw');
+SET @add_dusun_rw = IF(@has_dusun_rw = 0, 'ALTER TABLE `posyandu` ADD COLUMN `dusun_rw` varchar(100) DEFAULT NULL AFTER `nama_posyandu`', 'SELECT 1');
+PREPARE stmt_dusun_rw FROM @add_dusun_rw;
+EXECUTE stmt_dusun_rw;
+DEALLOCATE PREPARE stmt_dusun_rw;
+
 -- 1. Tambah kolom deskripsi dan timestamp di tabel role
 ALTER TABLE `role` ADD COLUMN `deskripsi` varchar(255) DEFAULT NULL AFTER `nama_role`;
 ALTER TABLE `role` ADD COLUMN `created_at` datetime DEFAULT current_timestamp();
@@ -28,10 +35,10 @@ CREATE TABLE IF NOT EXISTS `menu` (
 -- 3. Isi data default tabel menu
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `slug`, `icon`, `url`, `kategori`, `urutan`) VALUES
   (1, 'Dashboard', 'dashboard', 'bi-speedometer2', 'modules/dashboard/index.php', 'Utama', 1),
-  (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
+  (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', 'modules/data-anak/index.php', 'Data & Laporan', 2),
   (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', '#', 'Data & Laporan', 3),
   (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 4),
-  (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 5),
+  (5, 'Data Posyandu', 'posyandu', 'bi-hospital', 'modules/posyandu/index.php', 'Master Data', 5),
   (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 6),
   (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 7),
   (8, 'Role & Otorisasi', 'role', 'bi-shield-lock', 'modules/utilitas/role/index.php', 'Utilitas', 8)

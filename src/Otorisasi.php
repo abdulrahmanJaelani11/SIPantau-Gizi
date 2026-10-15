@@ -16,7 +16,8 @@ class Otorisasi
      * Cache hak akses per-request untuk optimasi query
      * Format: [role_id => ['dashboard', 'data-anak', ...]]
      */
-    private static array $cache = [];
+    // Untyped property keeps compatibility with PHP versions before 7.4.
+    private static $cache = [];
 
     /**
      * ID Role Bawaan Sistem yang dilindungi
@@ -271,6 +272,11 @@ class Otorisasi
 
         try {
             $db->query("SELECT 1 FROM role_menu LIMIT 1");
+            // Keep the Data Anak menu connected for existing installations too.
+            $db->prepare("UPDATE menu SET url = ? WHERE slug = 'data-anak'")
+               ->execute(['modules/data-anak/index.php']);
+            $db->prepare("UPDATE menu SET url = ? WHERE slug = 'posyandu'")
+               ->execute(['modules/posyandu/index.php']);
         } catch (Exception $e) {
             try {
                 // Periksa kolom deskripsi di tabel role
@@ -321,10 +327,10 @@ class Otorisasi
                     $db->exec("
                         INSERT INTO menu (id_menu, nama_menu, slug, icon, url, kategori, urutan) VALUES
                         (1, 'Dashboard', 'dashboard', 'bi-speedometer2', 'modules/dashboard/index.php', 'Utama', 1),
-                        (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
+                        (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', 'modules/data-anak/index.php', 'Data & Laporan', 2),
                         (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', '#', 'Data & Laporan', 3),
                         (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 4),
-                        (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 5),
+                        (5, 'Data Posyandu', 'posyandu', 'bi-hospital', 'modules/posyandu/index.php', 'Master Data', 5),
                         (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 6),
                         (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 7),
                         (8, 'Role & Otorisasi', 'role', 'bi-shield-lock', 'modules/utilitas/role/index.php', 'Utilitas', 8)
