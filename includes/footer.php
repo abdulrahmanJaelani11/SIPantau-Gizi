@@ -28,7 +28,10 @@ if (!defined('APP_LOADED')) {
   </div><!-- /.admin-shell -->
 
   <!-- Script Utama -->
+  <script src="<?= asset('vendors/jquery/jquery-3.7.1.min.js') ?>"></script>
   <script src="<?= asset('js/bootstrap.bundle.min.js') ?>"></script>
+  <script src="<?= asset('vendors/select2/js/select2.min.js') ?>"></script>
+  <script src="<?= asset('vendors/select2/js/i18n/id.js') ?>"></script>
   <script src="<?= asset('js/main.js') ?>"></script>
   <?php if (!empty($extra_scripts)) echo $extra_scripts; ?>
 </body>

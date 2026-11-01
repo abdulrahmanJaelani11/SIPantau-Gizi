@@ -324,7 +324,6 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table align-middle mb-0" id="pengukuranTable">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 50px;">#</th>
           <th scope="col" style="min-width: 220px;">Data Balita</th>
           <th scope="col" style="min-width: 130px;">Tgl Ukur</th>
           <th scope="col" style="min-width: 170px;">Antropometri</th>
@@ -338,22 +337,19 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($pengukuran_list)): ?>
           <tr>
-            <td colspan="9" class="text-center py-5 text-muted">
+            <td colspan="8" class="text-center py-5 text-muted">
               <i class="bi bi-clipboard-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
               Belum ada data pengukuran yang sesuai dengan kriteria pencarian.
             </td>
           </tr>
         <?php else: ?>
-          <?php foreach ($pengukuran_list as $idx => $p): 
+          <?php foreach ($pengukuran_list as $p): 
             $usia_bln  = Antropometri::hitungUsiaBulan($p['tanggal_lahir'], $p['tanggal_pengukuran']);
             $usia_teks = Antropometri::formatUsia($usia_bln);
             $is_l      = (strtoupper($p['jenis_kelamin']) === 'L');
           ?>
             <tr>
-              <!-- 1. Nomor -->
-              <td class="text-muted small"><?= $idx + 1 ?></td>
-
-              <!-- 2. Data Balita -->
+              <!-- Data Balita -->
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge <?= $is_l ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle' ?> rounded-circle p-2"
@@ -443,19 +439,19 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
 
               <!-- 9. Aksi -->
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Pengukuran">
+              <td class="text-end text-nowrap">
+                <div class="d-inline-flex gap-1 justify-content-end">
                   <a href="<?= base_url('modules/pengukuran/detail.php?id=' . (int)$p['id_pengukuran']) ?>"
-                     class="btn btn-outline-secondary" title="Detail & Lembar KMS Digital">
+                     class="btn btn-sm btn-outline-secondary" title="Detail & Lembar KMS Digital">
                     <i class="bi bi-eye"></i>
                   </a>
 
                   <a href="<?= base_url('modules/pengukuran/edit.php?id=' . (int)$p['id_pengukuran']) ?>"
-                     class="btn btn-outline-primary" title="Edit Hasil Pengukuran">
-                    <i class="bi bi-pencil-square"></i>
+                     class="btn btn-sm btn-outline-primary" title="Edit Hasil Pengukuran">
+                    <i class="bi bi-pencil"></i>
                   </a>
 
-                  <button type="button" class="btn btn-outline-danger"
+                  <button type="button" class="btn btn-sm btn-outline-danger"
                           data-bs-toggle="modal"
                           data-bs-target="#deletePengukuranModal"
                           data-pengukuran-id="<?= (int)$p['id_pengukuran'] ?>"

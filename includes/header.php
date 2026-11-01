@@ -39,6 +39,8 @@ $user_role = $_SESSION['user_role_nama'] ?? '';
 
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('vendors/bootstrap-icons/bootstrap-icons.css') ?>">
+  <link rel="stylesheet" href="<?= asset('vendors/select2/css/select2.min.css') ?>">
+  <link rel="stylesheet" href="<?= asset('vendors/select2/css/select2-bootstrap-5-theme.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
   <?php if (!empty($extra_css)) echo $extra_css; ?>
 </head>

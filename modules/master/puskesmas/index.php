@@ -347,17 +347,17 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
 
               <!-- 8. Aksi -->
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Puskesmas">
+              <td class="text-end text-nowrap">
+                <div class="d-inline-flex gap-1 justify-content-end">
                   <a href="<?= base_url('modules/master/puskesmas/detail.php?id=' . (int)$p['id_puskesmas']) ?>"
-                     class="btn btn-outline-secondary" title="Detail Puskesmas">
+                     class="btn btn-sm btn-outline-secondary" title="Detail Puskesmas">
                     <i class="bi bi-eye"></i>
                   </a>
 
                   <?php if ($is_admin): ?>
                     <a href="<?= base_url('modules/master/puskesmas/edit.php?id=' . (int)$p['id_puskesmas']) ?>"
-                       class="btn btn-outline-primary" title="Edit Puskesmas">
-                      <i class="bi bi-pencil-square"></i>
+                       class="btn btn-sm btn-outline-primary" title="Edit Puskesmas">
+                      <i class="bi bi-pencil"></i>
                     </a>
 
                     <?php if ($pos_count > 0 || $pet_count > 0): ?>
@@ -367,7 +367,7 @@ require_once ROOT_PATH . '/includes/header.php';
                         <i class="bi bi-trash"></i>
                       </button>
                     <?php else: ?>
-                      <button type="button" class="btn btn-outline-danger"
+                      <button type="button" class="btn btn-sm btn-outline-danger"
                               data-bs-toggle="modal"
                               data-bs-target="#deletePuskesmasModal"
                               data-puskesmas-id="<?= (int)$p['id_puskesmas'] ?>"

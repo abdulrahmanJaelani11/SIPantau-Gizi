@@ -272,8 +272,7 @@ require_once ROOT_PATH . '/includes/header.php';
         <table class="table table-hover align-middle mb-0 small">
           <thead class="table-light">
             <tr>
-              <th scope="col" style="width: 5%;">No</th>
-              <th scope="col">Tanggal Ukur</th>
+                            <th scope="col">Tanggal Ukur</th>
               <th scope="col">Usia</th>
               <th scope="col">BB (kg)</th>
               <th scope="col">TB (cm)</th>
@@ -286,7 +285,7 @@ require_once ROOT_PATH . '/includes/header.php';
           <tbody>
             <?php if (empty($riwayat_pengukuran)): ?>
               <tr>
-                <td colspan="9" class="text-center py-4 text-muted">Belum ada riwayat penimbangan lainnya.</td>
+                <td colspan="8" class="text-center py-4 text-muted">Belum ada riwayat penimbangan lainnya.</td>
               </tr>
             <?php else: ?>
               <?php
@@ -310,7 +309,6 @@ require_once ROOT_PATH . '/includes/header.php';
                 $prev_bb = (float)$r['berat_badan'];
               ?>
                 <tr class="<?= $is_current ? 'table-primary border-primary' : '' ?>">
-                  <td><?= $idx + 1 ?></td>
                   <td>
                     <span class="fw-semibold"><?= date('d/m/Y', strtotime($r['tanggal_pengukuran'])) ?></span>
                     <?php if ($is_current): ?>

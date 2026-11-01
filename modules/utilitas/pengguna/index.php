@@ -370,18 +370,18 @@ require_once ROOT_PATH . '/includes/header.php';
                   <?= !empty($u['created_at']) ? date('d M Y', strtotime($u['created_at'])) : '—' ?>
                 </span>
               </td>
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Pengguna">
+              <td class="text-end text-nowrap">
+                <div class="d-inline-flex gap-1 justify-content-end">
                   <a href="<?= base_url('modules/utilitas/pengguna/edit.php?id=' . $u['id_user']) ?>"
-                     class="btn btn-outline-primary"
+                     class="btn btn-sm btn-outline-primary"
                      title="Edit Pengguna">
-                    <i class="bi bi-pencil-square"></i>
+                    <i class="bi bi-pencil"></i>
                     <span class="d-none d-md-inline ms-1">Edit</span>
                   </a>
 
                   <?php if (!$is_current_user): ?>
                     <button type="button"
-                            class="btn btn-outline-danger btn-delete-user"
+                            class="btn btn-sm btn-outline-danger btn-delete-user"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteModal"
                             data-user-id="<?= $u['id_user'] ?>"
@@ -392,7 +392,7 @@ require_once ROOT_PATH . '/includes/header.php';
                       <span class="d-none d-md-inline ms-1">Hapus</span>
                     </button>
                   <?php else: ?>
-                    <button type="button" class="btn btn-outline-secondary disabled" title="Tidak dapat menghapus akun Anda sendiri">
+                    <button type="button" class="btn btn-sm btn-outline-secondary disabled" title="Tidak dapat menghapus akun Anda sendiri">
                       <i class="bi bi-lock"></i>
                     </button>
                   <?php endif; ?>

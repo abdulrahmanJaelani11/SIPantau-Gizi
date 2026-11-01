@@ -141,7 +141,71 @@
       });
     }
 
+    
+    function initSelect2() {
+      if (typeof jQuery === "undefined" || !jQuery.fn || !jQuery.fn.select2) {
+        return;
+      }
+
+      function setupElement($el, dropdownParent) {
+        if ($el.data('select2')) {
+          return;
+        }
+
+        var $modal = dropdownParent || ($el.closest('.modal').length ? $el.closest('.modal') : $(document.body));
+        var placeholderText = $el.find('option[value=""]').first().text().trim() || $el.attr('placeholder') || 'Pilih...';
+        var hasEmptyOption = $el.find('option[value=""]').length > 0;
+
+        var widthOpt = '100%';
+        if ($el.data('width')) {
+          widthOpt = $el.data('width');
+        } else if ($el.attr('style') && $el.attr('style').indexOf('width') !== -1) {
+          widthOpt = 'style';
+        } else if ($el.closest('.d-flex').length && !$el.closest('.row').length && $el.closest('[class*="col-"]').length === 0) {
+          widthOpt = 'style';
+        }
+
+        $el.select2({
+          theme: 'bootstrap-5',
+          language: 'id',
+          width: widthOpt,
+          dropdownParent: $modal,
+          placeholder: hasEmptyOption ? placeholderText : undefined,
+          allowClear: false
+        });
+
+        $el.on('select2:select select2:unselect select2:clear', function () {
+          this.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      }
+
+      $('select.select2, select.form-select:not(.no-select2):not(.select-status-hadir)').each(function () {
+        setupElement($(this));
+      });
+
+      $(document).on('shown.bs.modal', function (e) {
+        $(e.target).find('select.select2, select.form-select:not(.no-select2):not(.select-status-hadir)').each(function () {
+          setupElement($(this), $(e.target));
+        });
+      });
+
+      $(document).on('select2:open', function () {
+        var searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) {
+          searchField.focus();
+        }
+      });
+
+      $('form').on('reset', function () {
+        var form = this;
+        setTimeout(function () {
+          $(form).find('select.select2, select.form-select:not(.no-select2):not(.select-status-hadir)').trigger('change.select2');
+        }, 10);
+      });
+    }
+
     initValidation();
+    initSelect2();
     initTableSearch();
     initThemeToggle();
 

@@ -207,64 +207,60 @@ require_once ROOT_PATH . '/includes/header.php';
   </div>
 </div>
 
-<!-- Kartu Metrik Ringkasan -->
-<div class="row g-3 mb-4">
-  <!-- 1. Total Jadwal -->
-  <div class="col-sm-6 col-xl-3">
-    <div class="metric-card p-3 rounded-3 border bg-white shadow-sm h-100">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="text-muted small fw-semibold text-uppercase">Total Sesi Kegiatan</span>
-        <span class="badge bg-primary-subtle text-primary p-2 rounded-circle">
-          <i class="bi bi-calendar-range fs-6"></i>
-        </span>
+<!-- Kartu Metrik Ringkasan Jadwal -->
+<section class="row g-3 mb-4" aria-label="Ringkasan Jadwal Kegiatan">
+  <div class="col-12 col-sm-6 col-xl-3">
+    <article class="metric-card metric-primary">
+      <div class="metric-top">
+        <span class="metric-label">Total Sesi Kegiatan</span>
+        <span class="metric-icon"><i class="bi bi-calendar-range" aria-hidden="true"></i></span>
       </div>
-      <div class="fs-3 fw-bold text-dark"><?= number_format($total_jadwal) ?></div>
-      <small class="text-muted">Semua jadwal terdaftar</small>
-    </div>
+      <div class="metric-value"><?= number_format($total_jadwal) ?></div>
+      <div class="metric-meta">
+        <span class="text-muted">Semua jadwal terdaftar</span>
+      </div>
+    </article>
   </div>
 
-  <!-- 2. Jadwal Mendatang & Hari Ini -->
-  <div class="col-sm-6 col-xl-3">
-    <div class="metric-card p-3 rounded-3 border bg-white shadow-sm h-100">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="text-muted small fw-semibold text-uppercase">Mendatang / Aktif</span>
-        <span class="badge bg-info-subtle text-info p-2 rounded-circle">
-          <i class="bi bi-clock-history fs-6"></i>
-        </span>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <article class="metric-card metric-info">
+      <div class="metric-top">
+        <span class="metric-label">Mendatang / Aktif</span>
+        <span class="metric-icon"><i class="bi bi-clock-history" aria-hidden="true"></i></span>
       </div>
-      <div class="fs-3 fw-bold text-info"><?= number_format($total_upcoming) ?></div>
-      <small class="text-muted">Sesi penimbangan bulan ini</small>
-    </div>
+      <div class="metric-value"><?= number_format($total_upcoming) ?></div>
+      <div class="metric-meta">
+        <span class="text-info fw-semibold">Sesi penimbangan aktif</span>
+      </div>
+    </article>
   </div>
 
-  <!-- 3. Jadwal Terlaksana / Selesai -->
-  <div class="col-sm-6 col-xl-3">
-    <div class="metric-card p-3 rounded-3 border bg-white shadow-sm h-100">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="text-muted small fw-semibold text-uppercase">Telah Terlaksana</span>
-        <span class="badge bg-success-subtle text-success p-2 rounded-circle">
-          <i class="bi bi-check2-circle fs-6"></i>
-        </span>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <article class="metric-card metric-success">
+      <div class="metric-top">
+        <span class="metric-label">Telah Terlaksana</span>
+        <span class="metric-icon"><i class="bi bi-check2-circle" aria-hidden="true"></i></span>
       </div>
-      <div class="fs-3 fw-bold text-success"><?= number_format($total_selesai) ?></div>
-      <small class="text-muted">Riwayat penimbangan lampau</small>
-    </div>
+      <div class="metric-value"><?= number_format($total_selesai) ?></div>
+      <div class="metric-meta">
+        <span class="text-success fw-semibold">Riwayat terlaksana</span>
+      </div>
+    </article>
   </div>
 
-  <!-- 4. Rata-rata Kehadiran -->
-  <div class="col-sm-6 col-xl-3">
-    <div class="metric-card p-3 rounded-3 border bg-white shadow-sm h-100">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="text-muted small fw-semibold text-uppercase">Tingkat Kehadiran</span>
-        <span class="badge bg-warning-subtle text-warning p-2 rounded-circle">
-          <i class="bi bi-people fs-6"></i>
-        </span>
+  <div class="col-12 col-sm-6 col-xl-3">
+    <article class="metric-card metric-warning">
+      <div class="metric-top">
+        <span class="metric-label">Tingkat Kehadiran</span>
+        <span class="metric-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
       </div>
-      <div class="fs-3 fw-bold text-dark"><?= $persen_kehadiran ?>%</div>
-      <small class="text-muted"><?= number_format($total_kehadiran_hadir) ?> dari <?= number_format($total_kehadiran_all) ?> sasaran balita</small>
-    </div>
+      <div class="metric-value"><?= $persen_kehadiran ?>%</div>
+      <div class="metric-meta">
+        <span class="text-warning fw-semibold"><?= number_format($total_kehadiran_hadir) ?>/<?= number_format($total_kehadiran_all) ?> sasaran</span>
+      </div>
+    </article>
   </div>
-</div>
+</section>
 
 <!-- Panel Filter & Data Jadwal -->
 <section class="panel">
@@ -335,8 +331,7 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 4%;">#</th>
-          <th scope="col" style="width: 16%;">Tanggal & Jam</th>
+                    <th scope="col" style="width: 16%;">Tanggal & Jam</th>
           <th scope="col" style="width: 18%;">Posyandu Binaan</th>
           <th scope="col" style="width: 20%;">Lokasi Kegiatan</th>
           <th scope="col" style="width: 20%;">Agenda / Catatan</th>
@@ -347,13 +342,13 @@ require_once ROOT_PATH . '/includes/header.php';
       <tbody>
         <?php if (empty($jadwal_list)): ?>
           <tr>
-            <td colspan="7" class="text-center py-5 text-muted">
+            <td colspan="6" class="text-center py-5 text-muted">
               <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
               Belum ada jadwal kegiatan posyandu yang cocok dengan filter pencarian.
             </td>
           </tr>
         <?php else: ?>
-          <?php foreach ($jadwal_list as $idx => $j): 
+          <?php foreach ($jadwal_list as $j): 
             $tgl_db = $j['tanggal'];
             $is_today = ($tgl_db === $today);
             $is_past  = ($tgl_db < $today);
@@ -372,9 +367,7 @@ require_once ROOT_PATH . '/includes/header.php';
             $pct     = $sasaran > 0 ? round(($hadir / $sasaran) * 100) : 0;
           ?>
             <tr>
-              <!-- 1. Nomor -->
-              <td class="text-muted small"><?= $idx + 1 ?></td>
-
+              
               <!-- 2. Tanggal & Jam -->
               <td>
                 <div class="d-flex align-items-center gap-2">
@@ -435,19 +428,19 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
 
               <!-- 7. Aksi -->
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Jadwal">
+              <td class="text-end text-nowrap">
+                <div class="d-inline-flex gap-1 justify-content-end">
                   <a href="<?= base_url('modules/jadwal/detail.php?id=' . (int)$j['id_jadwal']) ?>"
-                     class="btn btn-outline-secondary" title="Lembar Presensi & Sweeping Balita">
+                     class="btn btn-sm btn-outline-secondary" title="Lembar Presensi & Sweeping Balita">
                     <i class="bi bi-clipboard-check"></i>
                   </a>
 
                   <a href="<?= base_url('modules/jadwal/edit.php?id=' . (int)$j['id_jadwal']) ?>"
-                     class="btn btn-outline-primary" title="Edit Jadwal">
-                    <i class="bi bi-pencil-square"></i>
+                     class="btn btn-sm btn-outline-primary" title="Edit Jadwal">
+                    <i class="bi bi-pencil"></i>
                   </a>
 
-                  <button type="button" class="btn btn-outline-danger"
+                  <button type="button" class="btn btn-sm btn-outline-danger"
                           data-bs-toggle="modal"
                           data-bs-target="#deleteJadwalModal"
                           data-jadwal-id="<?= (int)$j['id_jadwal'] ?>"

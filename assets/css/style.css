@@ -1,4 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap');
+
 :root {
+  --bs-body-font-family: 'Poppins', sans-serif;
+  --bs-font-sans-serif: 'Poppins', sans-serif;
   --sidebar-width: 280px;
   --sidebar-mini-width: 84px;
   --admin-bg: #f5f7fb;
@@ -33,7 +37,15 @@ body {
   margin: 0;
   background: linear-gradient(180deg, #f8fbff 0%, var(--admin-bg) 42%, #eef4fa 100%);
   color: var(--admin-text);
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
 }
 
 a {
@@ -117,7 +129,7 @@ a {
 
 .brand-title {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .brand-subtitle {
@@ -139,7 +151,7 @@ a {
   padding: 0.78rem 0.9rem;
   border-radius: 8px;
   color: #d1d5db;
-  font-weight: 700;
+  font-weight: 400;
   transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
   white-space: nowrap;
 }
@@ -149,6 +161,23 @@ a {
 .sidebar-nav .nav-link.active {
   background: var(--admin-sidebar-soft);
   color: #ffffff;
+}
+
+.sidebar-nav .nav-link .nav-text {
+  font-weight: 400;
+}
+
+.sidebar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.nav-label {
+  padding: 0.85rem 0.9rem 0.35rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  font-weight: 500;
 }
 
 .sidebar-nav .nav-link:hover,
@@ -198,6 +227,7 @@ a {
   color: var(--admin-sidebar-text-strong);
   font-size: 1rem;
   line-height: 1.1;
+  font-weight: 500;
 }
 
 .sidebar-user small {
@@ -1750,4 +1780,168 @@ html[data-theme="dark"] .role-preview-bar {
   background-color: #fee2e2;
   color: #991b1b;
   border: 1px solid #fecaca;
+}
+
+
+/* Penyeragaman tombol aksi dalam .btn-group (baik tag <a> maupun <button>) */
+.btn-group .btn,
+.btn-group-sm .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.btn-group-sm > .btn {
+  line-height: 1.5;
+  padding: 0.25rem 0.5rem;
+}
+
+/* ==========================================================================
+   Select2 Custom Styling — SiPantau Gizi Theme (Poppins, Theme-Aware)
+   ========================================================================== */
+.select2-container,
+.select2-container .select2-selection,
+.select2-dropdown,
+.select2-search__field,
+.select2-results__option {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Base selection container */
+.select2-container--bootstrap-5 .select2-selection {
+  border-radius: 8px;
+  border-color: var(--admin-border);
+  background-color: var(--admin-surface);
+  color: var(--admin-text);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single {
+  padding-left: 0.75rem;
+  padding-right: 2.25rem;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+  color: var(--admin-text);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 0;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder {
+  color: var(--admin-muted);
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+  border-color: #93c5fd;
+  box-shadow: var(--admin-ring);
+}
+
+/* Small Form Select (.form-select-sm) */
+.form-select-sm ~ .select2-container--bootstrap-5 .select2-selection,
+.select2-container--bootstrap-5.select2-container--sm .select2-selection,
+.form-select-sm + .select2-container--bootstrap-5 .select2-selection {
+  min-height: 31px !important;
+  font-size: 0.8125rem !important;
+  border-radius: 6px !important;
+  padding-left: 0.65rem !important;
+  padding-right: 1.85rem !important;
+}
+
+.form-select-sm ~ .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered,
+.form-select-sm + .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+  font-size: 0.8125rem !important;
+  line-height: 1.4 !important;
+}
+
+/* Dropdown Container */
+.select2-container--bootstrap-5 .select2-dropdown {
+  border-radius: 8px;
+  border-color: var(--admin-border);
+  background-color: var(--admin-surface);
+  color: var(--admin-text);
+  box-shadow: var(--admin-shadow);
+  overflow: hidden;
+  z-index: 1065;
+}
+
+/* Search Box Inside Dropdown */
+.select2-container--bootstrap-5 .select2-dropdown .select2-search {
+  padding: 0.5rem;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+  border-radius: 6px;
+  border: 1px solid var(--admin-border);
+  background-color: var(--admin-surface);
+  color: var(--admin-text);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.84rem;
+  outline: none;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field:focus {
+  border-color: #93c5fd;
+  box-shadow: var(--admin-ring);
+}
+
+/* Options / Results */
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options {
+  max-height: 240px;
+  padding: 0.25rem 0;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option {
+  color: var(--admin-text);
+  font-size: 0.85rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option--highlighted {
+  background-color: var(--admin-primary) !important;
+  color: #ffffff !important;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option--selected {
+  background-color: var(--admin-surface-soft);
+  color: var(--admin-primary);
+  font-weight: 600;
+}
+
+/* Filter bar min-width & flex responsiveness */
+.panel-header form .select2-container,
+.d-flex.align-items-center > .select2-container,
+.d-flex.gap-2 > .select2-container {
+  min-width: 175px;
+  max-width: 100%;
+}
+
+/* Dark mode tweaks */
+html[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+  background-color: var(--admin-surface);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
+  background-color: var(--admin-surface);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+  background-color: var(--admin-surface-soft);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option--selected {
+  background-color: rgba(96, 165, 250, 0.15);
+  color: var(--admin-primary);
 }

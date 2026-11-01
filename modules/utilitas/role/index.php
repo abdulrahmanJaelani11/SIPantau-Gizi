@@ -312,18 +312,18 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
 
               <!-- 6. Aksi -->
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Aksi Role">
+              <td class="text-end text-nowrap">
+                <div class="d-inline-flex gap-1 justify-content-end">
                   <!-- Tombol Detail & Matriks Akses -->
                   <a href="<?= base_url('modules/utilitas/role/detail.php?id=' . (int)$role['id_role']) ?>"
-                     class="btn btn-outline-secondary" title="Detail Role & Daftar Hak Akses">
+                     class="btn btn-sm btn-outline-secondary" title="Detail Role & Daftar Hak Akses">
                     <i class="bi bi-eye"></i>
                   </a>
 
                   <!-- Tombol Edit -->
                   <a href="<?= base_url('modules/utilitas/role/edit.php?id=' . (int)$role['id_role']) ?>"
-                     class="btn btn-outline-primary" title="Edit Role & Konfigurasi Otorisasi">
-                    <i class="bi bi-pencil-square"></i>
+                     class="btn btn-sm btn-outline-primary" title="Edit Role & Konfigurasi Otorisasi">
+                    <i class="bi bi-pencil"></i>
                   </a>
 
                   <!-- Tombol Hapus -->
@@ -343,7 +343,7 @@ require_once ROOT_PATH . '/includes/header.php';
                       <i class="bi bi-trash"></i>
                     </button>
                   <?php else: ?>
-                    <button type="button" class="btn btn-outline-danger"
+                    <button type="button" class="btn btn-sm btn-outline-danger"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteRoleModal"
                             data-role-id="<?= (int)$role['id_role'] ?>"

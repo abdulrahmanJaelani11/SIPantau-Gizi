@@ -350,8 +350,7 @@ require_once ROOT_PATH . '/includes/header.php';
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light small">
           <tr>
-            <th scope="col" style="width: 3%;">#</th>
-            <th scope="col" style="width: 25%;">Identitas Balita & Orang Tua</th>
+                        <th scope="col" style="width: 25%;">Identitas Balita & Orang Tua</th>
             <th scope="col" style="width: 17%;">Status Kehadiran</th>
             <th scope="col" style="width: 25%;">Hasil Penimbangan Hari Ini</th>
             <th scope="col" style="width: 20%;">Catatan / Alasan</th>
@@ -361,7 +360,7 @@ require_once ROOT_PATH . '/includes/header.php';
         <tbody>
           <?php if (empty($kehadiran_list)): ?>
             <tr>
-              <td colspan="6" class="text-center py-5 text-muted">
+              <td colspan="5" class="text-center py-5 text-muted">
                 <i class="bi bi-people fs-1 d-block mb-2 text-secondary opacity-50"></i>
                 Belum ada balita yang terdaftar di posyandu ini.
                 <div class="mt-2">
@@ -372,7 +371,7 @@ require_once ROOT_PATH . '/includes/header.php';
               </td>
             </tr>
           <?php else: ?>
-            <?php foreach ($kehadiran_list as $idx => $k): 
+            <?php foreach ($kehadiran_list as $k): 
               $usia_bln  = Antropometri::hitungUsiaBulan($k['tanggal_lahir'], $jadwal['tanggal']);
               $usia_teks = Antropometri::formatUsia($usia_bln);
               $is_l      = ($k['jenis_kelamin'] === 'L');
@@ -380,8 +379,7 @@ require_once ROOT_PATH . '/includes/header.php';
             ?>
               <tr class="<?= $st_hadir === 'Tidak Hadir' ? 'table-danger-subtle' : '' ?>">
                 <!-- 1. Nomor -->
-                <td class="text-muted small"><?= $idx + 1 ?></td>
-
+                
                 <!-- 2. Data Balita -->
                 <td>
                   <div class="d-flex align-items-center gap-2">
@@ -468,15 +466,15 @@ require_once ROOT_PATH . '/includes/header.php';
 
                 <!-- 6. Tindakan Cepat -->
                 <td class="text-end">
-                  <div class="btn-group btn-group-sm">
+                  <div class="d-inline-flex gap-1 justify-content-end">
                     <?php if (!empty($k['id_pengukuran'])): ?>
                       <a href="<?= base_url('modules/pengukuran/detail.php?id=' . (int)$k['id_pengukuran']) ?>"
-                         class="btn btn-outline-secondary" title="Buka Detail KMS">
+                         class="btn btn-sm btn-outline-secondary" title="Buka Detail KMS">
                         <i class="bi bi-eye"></i>
                       </a>
                     <?php else: ?>
                       <a href="<?= base_url('modules/pengukuran/tambah.php?id_anak=' . (int)$k['id_anak'] . '&tanggal=' . urlencode($jadwal['tanggal'])) ?>"
-                         class="btn btn-outline-primary" title="Timbang Sekarang">
+                         class="btn btn-sm btn-outline-primary" title="Timbang Sekarang">
                         <i class="bi bi-rulers"></i>
                       </a>
                     <?php endif; ?>
