@@ -66,7 +66,7 @@ if ($pdo !== null) {
             }
 
             $url = $m['url'] ?? '#';
-            if ($url !== '#' && !str_starts_with($url, 'http')) {
+            if ($url !== '#' && strncmp($url, 'http', 4) !== 0) {
                 $url = base_url($url);
             }
 
@@ -89,7 +89,8 @@ if (empty($sidebar_menus)) {
         ['slug' => 'dashboard',    'nama' => 'Dashboard',          'icon' => 'bi-speedometer2',  'url' => base_url('modules/dashboard/index.php')],
         ['type' => 'label', 'nama' => 'Data & Laporan'],
         ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
-        ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => '#'],
+        ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => base_url('modules/pengukuran/index.php')],
+        ['slug' => 'jadwal',       'nama' => 'Jadwal & Kunjungan', 'icon' => 'bi-calendar-check','url' => base_url('modules/jadwal/index.php')],
         ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'],
         ['type' => 'label', 'nama' => 'Master Data'],
         ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => base_url('modules/posyandu/index.php')],
