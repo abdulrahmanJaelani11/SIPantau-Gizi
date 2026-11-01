@@ -66,7 +66,7 @@ if ($pdo !== null) {
             }
 
             $url = $m['url'] ?? '#';
-            if ($url !== '#' && !str_starts_with($url, 'http')) {
+            if ($url !== '#' && strncmp($url, 'http', 4) !== 0) {
                 $url = base_url($url);
             }
 
