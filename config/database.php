@@ -9,10 +9,10 @@
  *          Jangan require langsung dari halaman modul.
  */
 
-// TODO: koordinasi tim — pastikan semua anggota pakai nama database yang sama
+// Konfigurasi database baru
 $db_host = 'localhost';
 $db_port = '3306';
-$db_name = 'sipantau_gizi';
+$db_name = 'db_sipantau_gizi';
 $db_user = 'root';
 $db_pass = '';
 

@@ -24,6 +24,23 @@ require_once ROOT_PATH . '/includes/auth-guard.php';
 $page_title   = 'Dashboard';
 $current_slug = 'dashboard';
 
+// Query metrik real-time dari database baru
+$total_balita     = 0;
+$total_pengukuran = 0;
+$total_posyandu   = 0;
+$total_stunting   = 0;
+
+if ($pdo !== null) {
+    try {
+        $total_balita     = (int) $pdo->query("SELECT COUNT(*) FROM anak")->fetchColumn();
+        $total_pengukuran = (int) $pdo->query("SELECT COUNT(*) FROM pengukuran")->fetchColumn();
+        $total_posyandu   = (int) $pdo->query("SELECT COUNT(*) FROM posyandu")->fetchColumn();
+        $total_stunting   = (int) $pdo->query("SELECT COUNT(*) FROM status_gizi WHERE status_tb_u = 'Stunting'")->fetchColumn();
+    } catch (PDOException $e) {
+        // Abaikan jika query gagal
+    }
+}
+
 // 4. Tampilkan header + sidebar
 include ROOT_PATH . '/includes/header.php';
 ?>
@@ -41,7 +58,7 @@ include ROOT_PATH . '/includes/header.php';
   </div>
 </div>
 
-<!-- Kartu Metrik Contoh -->
+<!-- Kartu Metrik -->
 <section class="row g-3 mt-1" aria-label="Ringkasan metrik">
   <div class="col-12 col-sm-6 col-xl-3">
     <article class="metric-card metric-primary">
@@ -49,9 +66,9 @@ include ROOT_PATH . '/includes/header.php';
         <span class="metric-label">Total Balita</span>
         <span class="metric-icon"><i class="bi bi-person-hearts" aria-hidden="true"></i></span>
       </div>
-      <div class="metric-value">—</div>
+      <div class="metric-value"><?= number_format($total_balita) ?></div>
       <div class="metric-meta">
-        <span class="text-muted">Belum ada data</span>
+        <span class="text-muted">Data anak terdaftar</span>
       </div>
     </article>
   </div>
@@ -59,12 +76,12 @@ include ROOT_PATH . '/includes/header.php';
   <div class="col-12 col-sm-6 col-xl-3">
     <article class="metric-card metric-success">
       <div class="metric-top">
-        <span class="metric-label">Gizi Baik</span>
-        <span class="metric-icon"><i class="bi bi-check2-circle" aria-hidden="true"></i></span>
+        <span class="metric-label">Total Posyandu</span>
+        <span class="metric-icon"><i class="bi bi-hospital" aria-hidden="true"></i></span>
       </div>
-      <div class="metric-value">—</div>
+      <div class="metric-value"><?= number_format($total_posyandu) ?></div>
       <div class="metric-meta">
-        <span class="text-muted">Belum ada data</span>
+        <span class="text-muted">Titik layanan aktif</span>
       </div>
     </article>
   </div>
@@ -72,12 +89,12 @@ include ROOT_PATH . '/includes/header.php';
   <div class="col-12 col-sm-6 col-xl-3">
     <article class="metric-card metric-warning">
       <div class="metric-top">
-        <span class="metric-label">Gizi Kurang</span>
-        <span class="metric-icon"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+        <span class="metric-label">Data Pengukuran</span>
+        <span class="metric-icon"><i class="bi bi-rulers" aria-hidden="true"></i></span>
       </div>
-      <div class="metric-value">—</div>
+      <div class="metric-value"><?= number_format($total_pengukuran) ?></div>
       <div class="metric-meta">
-        <span class="text-muted">Belum ada data</span>
+        <span class="text-muted">Riwayat penimbangan</span>
       </div>
     </article>
   </div>
@@ -85,12 +102,12 @@ include ROOT_PATH . '/includes/header.php';
   <div class="col-12 col-sm-6 col-xl-3">
     <article class="metric-card metric-danger">
       <div class="metric-top">
-        <span class="metric-label">Stunting</span>
+        <span class="metric-label">Kasus Stunting</span>
         <span class="metric-icon"><i class="bi bi-heartbreak" aria-hidden="true"></i></span>
       </div>
-      <div class="metric-value">—</div>
+      <div class="metric-value"><?= number_format($total_stunting) ?></div>
       <div class="metric-meta">
-        <span class="text-muted">Belum ada data</span>
+        <span class="text-danger">Perlu intervensi gizi</span>
       </div>
     </article>
   </div>

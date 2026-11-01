@@ -2,14 +2,17 @@
 /**
  * Modul Utilitas — Edit Pengguna
  * ===============================
- * Halaman untuk memperbarui data akun pengguna (nama, email, role, status, dan password opsional).
+ * Halaman untuk memperbarui data akun pengguna.
+ * Disesuaikan dengan arsitektur database db_sipantau_gizi (tabel user, role, posyandu, puskesmas).
  */
 
 require_once __DIR__ . '/../../../config/app.php';
 require_once ROOT_PATH . '/includes/auth-guard.php';
 
-// Pastikan hanya role Admin yang bisa mengelola akun pengguna
-if (($_SESSION['user_role_nama'] ?? '') !== 'Admin' && ($_SESSION['role_id'] ?? 0) != 1) {
+// Pastikan hanya role Admin yang bisa mengelola akun pengguna (id_role = 4)
+$user_role = $_SESSION['user_role_nama'] ?? '';
+$user_role_id = $_SESSION['role_id'] ?? 0;
+if (strcasecmp($user_role, 'Admin') !== 0 && $user_role_id != 4) {
     set_flash('danger', 'Akses ditolak. Halaman ini hanya untuk Administrator.');
     redirect(base_url('modules/dashboard/index.php'));
 }
@@ -26,9 +29,9 @@ $user = null;
 try {
     $stmt = $pdo->prepare("
         SELECT u.*, r.nama_role 
-        FROM users u 
-        LEFT JOIN roles r ON u.role_id = r.id 
-        WHERE u.id = ? 
+        FROM user u 
+        LEFT JOIN role r ON u.id_role = r.id_role 
+        WHERE u.id_user = ? 
         LIMIT 1
     ");
     $stmt->execute([$user_id]);
@@ -44,13 +47,17 @@ if (!$user) {
 }
 
 // Cek apakah sedang mengedit akun sendiri
-$is_own_account = ((int)$user['id'] === (int)$_SESSION['user_id']);
+$is_own_account = ((int)$user['id_user'] === (int)$_SESSION['user_id']);
 
-// 3. Ambil daftar role untuk dropdown
+// 3. Ambil daftar master data
 $roles_list = [];
+$posyandu_list = [];
+$puskesmas_list = [];
+
 try {
-    $roles_stmt = $pdo->query("SELECT id, nama_role, deskripsi FROM roles ORDER BY id ASC");
-    $roles_list = $roles_stmt->fetchAll();
+    $roles_list     = $pdo->query("SELECT id_role, nama_role FROM role ORDER BY id_role ASC")->fetchAll();
+    $posyandu_list  = $pdo->query("SELECT id_posyandu, nama_posyandu FROM posyandu ORDER BY nama_posyandu ASC")->fetchAll();
+    $puskesmas_list = $pdo->query("SELECT id_puskesmas, nama_puskesmas FROM puskesmas ORDER BY nama_puskesmas ASC")->fetchAll();
 } catch (PDOException $e) {
     $roles_list = [];
 }
@@ -67,9 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $nama             = trim($_POST['nama'] ?? '');
+    $username         = trim($_POST['username'] ?? '');
     $email            = trim($_POST['email'] ?? '');
-    $role_id          = $is_own_account ? (int)$user['role_id'] : trim($_POST['role_id'] ?? '');
-    $status           = $is_own_account ? 'aktif' : trim($_POST['status'] ?? 'aktif');
+    $no_telepon       = trim($_POST['no_telepon'] ?? '');
+    $id_role          = $is_own_account ? (int)$user['id_role'] : trim($_POST['id_role'] ?? '');
+    $id_posyandu      = !empty($_POST['id_posyandu']) ? (int)$_POST['id_posyandu'] : null;
+    $id_puskesmas     = !empty($_POST['id_puskesmas']) ? (int)$_POST['id_puskesmas'] : null;
+    $status           = $is_own_account ? 'Aktif' : trim($_POST['status'] ?? 'Aktif');
     $password         = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
 
@@ -80,35 +91,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['nama'] = 'Nama lengkap minimal 3 karakter.';
     }
 
-    // Validasi Email
-    if ($email === '') {
-        $errors['email'] = 'Alamat email wajib diisi.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = 'Format alamat email tidak valid.';
+    // Validasi Username
+    if ($username === '') {
+        $errors['username'] = 'Username wajib diisi.';
+    } elseif (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
+        $errors['username'] = 'Username hanya boleh huruf, angka, underscore (3-30 karakter).';
     } else {
-        // Cek duplikasi email pada user LAIN
+        // Cek duplikasi username pada user LAIN
         try {
-            $check_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
-            $check_stmt->execute([$email, $user_id]);
-            if ($check_stmt->fetch()) {
-                $errors['email'] = 'Email ini sudah digunakan oleh akun lain. Gunakan email lain.';
+            $stmt = $pdo->prepare("SELECT id_user FROM user WHERE username = ? AND id_user != ? LIMIT 1");
+            $stmt->execute([$username, $user_id]);
+            if ($stmt->fetch()) {
+                $errors['username'] = 'Username ini sudah digunakan akun lain.';
             }
         } catch (PDOException $e) {
-            $errors[] = 'Gagal memeriksa ketersediaan email: ' . $e->getMessage();
+            $errors[] = 'Gagal memeriksa username: ' . $e->getMessage();
         }
     }
 
-    // Validasi Role (jika bukan akun sendiri)
+    // Validasi Email (jika diisi)
+    if ($email !== '') {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Format alamat email tidak valid.';
+        } else {
+            try {
+                $stmt = $pdo->prepare("SELECT id_user FROM user WHERE email = ? AND id_user != ? LIMIT 1");
+                $stmt->execute([$email, $user_id]);
+                if ($stmt->fetch()) {
+                    $errors['email'] = 'Email ini sudah digunakan oleh akun lain.';
+                }
+            } catch (PDOException $e) {
+                $errors[] = 'Gagal memeriksa email: ' . $e->getMessage();
+            }
+        }
+    } else {
+        $email = null;
+    }
+
+    // Validasi Role
     if (!$is_own_account) {
-        $valid_role_ids = array_column($roles_list, 'id');
-        if ($role_id === '' || !in_array($role_id, $valid_role_ids)) {
-            $errors['role_id'] = 'Silakan pilih peran (role) yang valid.';
+        $valid_role_ids = array_column($roles_list, 'id_role');
+        if ($id_role === '' || !in_array($id_role, $valid_role_ids)) {
+            $errors['id_role'] = 'Silakan pilih peran (role) yang valid.';
         }
     }
 
-    // Validasi Status (jika bukan akun sendiri)
-    if (!$is_own_account && !in_array($status, ['aktif', 'nonaktif'], true)) {
-        $status = 'aktif';
+    // Validasi Status
+    if (!$is_own_account) {
+        $status = ucfirst(strtolower($status));
+        if (!in_array($status, ['Aktif', 'Nonaktif'], true)) {
+            $status = 'Aktif';
+        }
     }
 
     // Validasi Password Baru (Hanya jika diisi)
@@ -129,26 +162,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($update_password) {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 $update_sql = "
-                    UPDATE users 
-                    SET nama = ?, email = ?, password = ?, role_id = ?, status = ?, updated_at = NOW() 
-                    WHERE id = ?
+                    UPDATE user 
+                    SET nama = ?, username = ?, email = ?, no_telepon = ?, id_role = ?, 
+                        id_posyandu = ?, id_puskesmas = ?, status = ?, password_hash = ?
+                    WHERE id_user = ?
                 ";
                 $update_stmt = $pdo->prepare($update_sql);
-                $update_stmt->execute([$nama, $email, $hashed_password, (int)$role_id, $status, $user_id]);
+                $update_stmt->execute([
+                    $nama, $username, $email, $no_telepon ?: null, (int)$id_role,
+                    $id_posyandu, $id_puskesmas, $status, $hashed_password, $user_id
+                ]);
             } else {
                 $update_sql = "
-                    UPDATE users 
-                    SET nama = ?, email = ?, role_id = ?, status = ?, updated_at = NOW() 
-                    WHERE id = ?
+                    UPDATE user 
+                    SET nama = ?, username = ?, email = ?, no_telepon = ?, id_role = ?, 
+                        id_posyandu = ?, id_puskesmas = ?, status = ?
+                    WHERE id_user = ?
                 ";
                 $update_stmt = $pdo->prepare($update_sql);
-                $update_stmt->execute([$nama, $email, (int)$role_id, $status, $user_id]);
+                $update_stmt->execute([
+                    $nama, $username, $email, $no_telepon ?: null, (int)$id_role,
+                    $id_posyandu, $id_puskesmas, $status, $user_id
+                ]);
             }
 
-            // Jika mengedit akun sendiri, update data session agar nama langsung berubah di topbar
+            // Jika mengedit akun sendiri, update session
             if ($is_own_account) {
-                $_SESSION['user_nama'] = $nama;
-                $_SESSION['user_email'] = $email;
+                $_SESSION['user_nama']     = $nama;
+                $_SESSION['user_username'] = $username;
+                $_SESSION['user_email']    = $email;
             }
 
             set_flash('success', "Data pengguna <strong>" . e($nama) . "</strong> berhasil diperbarui.");
@@ -240,45 +282,71 @@ require_once ROOT_PATH . '/includes/header.php';
             <?php endif; ?>
           </div>
 
+          <!-- Username -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="username">
+              Username <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">@</span>
+              <input type="text"
+                     class="form-control <?= isset($errors['username']) ? 'is-invalid' : '' ?>"
+                     id="username"
+                     name="username"
+                     value="<?= e($_POST['username'] ?? $user['username']) ?>"
+                     required>
+            </div>
+            <?php if (isset($errors['username'])): ?>
+              <div class="text-danger small mt-1"><?= e($errors['username']) ?></div>
+            <?php endif; ?>
+          </div>
+
           <!-- Email -->
           <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold" for="email">
-              Alamat Email <span class="text-danger">*</span>
-            </label>
+            <label class="form-label fw-semibold" for="email">Alamat Email</label>
             <input type="email"
                    class="form-control <?= isset($errors['email']) ? 'is-invalid' : '' ?>"
                    id="email"
                    name="email"
-                   value="<?= e($_POST['email'] ?? $user['email']) ?>"
-                   required>
+                   value="<?= e($_POST['email'] ?? $user['email'] ?? '') ?>">
             <?php if (isset($errors['email'])): ?>
               <div class="invalid-feedback"><?= e($errors['email']) ?></div>
             <?php endif; ?>
           </div>
 
+          <!-- Nomor Telepon -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="no_telepon">Nomor Telepon / WhatsApp</label>
+            <input type="tel"
+                   class="form-control"
+                   id="no_telepon"
+                   name="no_telepon"
+                   value="<?= e($_POST['no_telepon'] ?? $user['no_telepon'] ?? '') ?>">
+          </div>
+
           <!-- Peran / Role -->
           <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold" for="role_id">
+            <label class="form-label fw-semibold" for="id_role">
               Peran (Role) <span class="text-danger">*</span>
             </label>
             <?php if ($is_own_account): ?>
               <input type="text" class="form-control bg-light" value="<?= e($user['nama_role']) ?> (Akun Anda Saat Ini)" readonly>
-              <input type="hidden" name="role_id" value="<?= $user['role_id'] ?>">
+              <input type="hidden" name="id_role" value="<?= $user['id_role'] ?>">
               <div class="form-text text-muted">Peran Anda dilindungi untuk mencegah hilangnya hak akses Administrator.</div>
             <?php else: ?>
-              <select class="form-select <?= isset($errors['role_id']) ? 'is-invalid' : '' ?>"
-                      id="role_id"
-                      name="role_id"
+              <select class="form-select <?= isset($errors['id_role']) ? 'is-invalid' : '' ?>"
+                      id="id_role"
+                      name="id_role"
                       required>
                 <?php foreach ($roles_list as $r): ?>
-                  <?php $selected = ((string)($_POST['role_id'] ?? $user['role_id']) === (string)$r['id']); ?>
-                  <option value="<?= $r['id'] ?>" <?= $selected ? 'selected' : '' ?>>
+                  <?php $selected = ((string)($_POST['id_role'] ?? $user['id_role']) === (string)$r['id_role']); ?>
+                  <option value="<?= $r['id_role'] ?>" <?= $selected ? 'selected' : '' ?>>
                     <?= e($r['nama_role']) ?>
                   </option>
                 <?php endforeach; ?>
               </select>
-              <?php if (isset($errors['role_id'])): ?>
-                <div class="invalid-feedback"><?= e($errors['role_id']) ?></div>
+              <?php if (isset($errors['id_role'])): ?>
+                <div class="invalid-feedback"><?= e($errors['id_role']) ?></div>
               <?php endif; ?>
             <?php endif; ?>
           </div>
@@ -290,15 +358,43 @@ require_once ROOT_PATH . '/includes/header.php';
             </label>
             <?php if ($is_own_account): ?>
               <input type="text" class="form-control bg-light text-success fw-semibold" value="Aktif (Akun Anda Saat Ini)" readonly>
-              <input type="hidden" name="status" value="aktif">
+              <input type="hidden" name="status" value="Aktif">
               <div class="form-text text-muted">Anda tidak dapat menonaktifkan akun yang sedang login.</div>
             <?php else: ?>
-              <?php $cur_status = $_POST['status'] ?? $user['status']; ?>
+              <?php $cur_status = ucfirst(strtolower($_POST['status'] ?? $user['status'])); ?>
               <select class="form-select" id="status" name="status" required>
-                <option value="aktif" <?= $cur_status === 'aktif' ? 'selected' : '' ?>>Aktif (Dapat Login)</option>
-                <option value="nonaktif" <?= $cur_status === 'nonaktif' ? 'selected' : '' ?>>Nonaktif (Akses Dibekukan)</option>
+                <option value="Aktif" <?= $cur_status === 'Aktif' ? 'selected' : '' ?>>Aktif (Dapat Login)</option>
+                <option value="Nonaktif" <?= $cur_status === 'Nonaktif' ? 'selected' : '' ?>>Nonaktif (Akses Dibekukan)</option>
               </select>
             <?php endif; ?>
+          </div>
+
+          <!-- Penugasan Posyandu -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="id_posyandu">Penugasan Posyandu</label>
+            <select class="form-select" id="id_posyandu" name="id_posyandu">
+              <option value="">-- Tanpa Penugasan Posyandu --</option>
+              <?php foreach ($posyandu_list as $p): ?>
+                <?php $sel_p = ((string)($_POST['id_posyandu'] ?? $user['id_posyandu']) === (string)$p['id_posyandu']); ?>
+                <option value="<?= $p['id_posyandu'] ?>" <?= $sel_p ? 'selected' : '' ?>>
+                  <?= e($p['nama_posyandu']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Penugasan Puskesmas -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="id_puskesmas">Penugasan Puskesmas</label>
+            <select class="form-select" id="id_puskesmas" name="id_puskesmas">
+              <option value="">-- Tanpa Penugasan Puskesmas --</option>
+              <?php foreach ($puskesmas_list as $pk): ?>
+                <?php $sel_pk = ((string)($_POST['id_puskesmas'] ?? $user['id_puskesmas']) === (string)$pk['id_puskesmas']); ?>
+                <option value="<?= $pk['id_puskesmas'] ?>" <?= $sel_pk ? 'selected' : '' ?>>
+                  <?= e($pk['nama_puskesmas']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
 
           <!-- Bagian Ganti Password (Opsional) -->
@@ -370,13 +466,14 @@ require_once ROOT_PATH . '/includes/header.php';
         </div>
 
         <h3 class="h5 mb-0"><?= e($user['nama']) ?></h3>
-        <p class="text-muted small mb-2"><?= e($user['email']) ?></p>
+        <p class="text-primary small mb-1 fw-medium">@<?= e($user['username']) ?></p>
+        <p class="text-muted small mb-2"><?= e($user['email'] ?? 'Tidak ada email') ?></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">
           <span class="badge text-bg-primary">
             <i class="bi bi-shield-check me-1"></i><?= e($user['nama_role'] ?? 'Tanpa Role') ?>
           </span>
-          <?php if ($user['status'] === 'aktif'): ?>
+          <?php if (strcasecmp($user['status'], 'aktif') === 0): ?>
             <span class="badge text-bg-success">Aktif</span>
           <?php else: ?>
             <span class="badge text-bg-secondary">Nonaktif</span>
@@ -386,15 +483,19 @@ require_once ROOT_PATH . '/includes/header.php';
         <div class="border-top pt-3 text-start small">
           <div class="d-flex justify-content-between py-1">
             <span class="text-muted">ID Pengguna:</span>
-            <span class="fw-semibold">#<?= $user['id'] ?></span>
+            <span class="fw-semibold">#<?= $user['id_user'] ?></span>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <span class="text-muted">No. Telepon:</span>
+            <span><?= e($user['no_telepon'] ?? '—') ?></span>
           </div>
           <div class="d-flex justify-content-between py-1">
             <span class="text-muted">Tanggal Dibuat:</span>
-            <span><?= date('d M Y, H:i', strtotime($user['created_at'])) ?></span>
+            <span><?= !empty($user['created_at']) ? date('d M Y, H:i', strtotime($user['created_at'])) : '—' ?></span>
           </div>
           <div class="d-flex justify-content-between py-1">
-            <span class="text-muted">Terakhir Diperbarui:</span>
-            <span><?= date('d M Y, H:i', strtotime($user['updated_at'])) ?></span>
+            <span class="text-muted">Terakhir Update:</span>
+            <span><?= !empty($user['update_at']) ? date('d M Y, H:i', strtotime($user['update_at'])) : '—' ?></span>
           </div>
         </div>
 

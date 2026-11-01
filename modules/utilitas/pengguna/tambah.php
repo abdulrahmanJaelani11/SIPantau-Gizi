@@ -3,24 +3,33 @@
  * Modul Utilitas — Tambah Pengguna Baru
  * =====================================
  * Halaman form untuk menambahkan akun pengguna baru ke sistem SiPantau Gizi.
+ * Disesuaikan dengan arsitektur database db_sipantau_gizi (tabel user, role, posyandu, puskesmas).
  */
 
 require_once __DIR__ . '/../../../config/app.php';
 require_once ROOT_PATH . '/includes/auth-guard.php';
 
-// Pastikan hanya role Admin yang bisa menambah akun pengguna
-if (($_SESSION['user_role_nama'] ?? '') !== 'Admin' && ($_SESSION['role_id'] ?? 0) != 1) {
+// Pastikan hanya role Admin yang bisa menambah akun pengguna (id_role = 4)
+$user_role = $_SESSION['user_role_nama'] ?? '';
+$user_role_id = $_SESSION['role_id'] ?? 0;
+if (strcasecmp($user_role, 'Admin') !== 0 && $user_role_id != 4) {
     set_flash('danger', 'Akses ditolak. Halaman ini hanya untuk Administrator.');
     redirect(base_url('modules/dashboard/index.php'));
 }
 
 // Ambil daftar role untuk dropdown
 $roles_list = [];
+$posyandu_list = [];
+$puskesmas_list = [];
+$wilayah_list = [];
+
 try {
-    $roles_stmt = $pdo->query("SELECT id, nama_role, deskripsi FROM roles ORDER BY id ASC");
-    $roles_list = $roles_stmt->fetchAll();
+    $roles_list     = $pdo->query("SELECT id_role, nama_role FROM role ORDER BY id_role ASC")->fetchAll();
+    $posyandu_list  = $pdo->query("SELECT id_posyandu, nama_posyandu FROM posyandu ORDER BY nama_posyandu ASC")->fetchAll();
+    $puskesmas_list = $pdo->query("SELECT id_puskesmas, nama_puskesmas FROM puskesmas ORDER BY nama_puskesmas ASC")->fetchAll();
+    $wilayah_list   = $pdo->query("SELECT id_wilayah, nama_wilayah FROM wilayah ORDER BY nama_wilayah ASC")->fetchAll();
 } catch (PDOException $e) {
-    set_flash('danger', 'Gagal memuat data role: ' . $e->getMessage());
+    set_flash('danger', 'Gagal memuat master data: ' . $e->getMessage());
 }
 
 $errors = [];
@@ -35,18 +44,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $nama             = trim($_POST['nama'] ?? '');
+    $username         = trim($_POST['username'] ?? '');
     $email            = trim($_POST['email'] ?? '');
-    $role_id          = trim($_POST['role_id'] ?? '');
-    $status           = trim($_POST['status'] ?? 'aktif');
+    $no_telepon       = trim($_POST['no_telepon'] ?? '');
+    $id_role          = trim($_POST['id_role'] ?? '');
+    $id_posyandu      = !empty($_POST['id_posyandu']) ? (int)$_POST['id_posyandu'] : null;
+    $id_puskesmas     = !empty($_POST['id_puskesmas']) ? (int)$_POST['id_puskesmas'] : null;
+    $id_wilayah       = !empty($_POST['id_wilayah']) ? (int)$_POST['id_wilayah'] : null;
+    $status           = trim($_POST['status'] ?? 'Aktif');
     $password         = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
 
     // Simpan input lama agar user tidak perlu mengisi ulang jika error
     set_old_input([
-        'nama'    => $nama,
-        'email'   => $email,
-        'role_id' => $role_id,
-        'status'  => $status,
+        'nama'         => $nama,
+        'username'     => $username,
+        'email'        => $email,
+        'no_telepon'   => $no_telepon,
+        'id_role'      => $id_role,
+        'id_posyandu'  => $id_posyandu,
+        'id_puskesmas' => $id_puskesmas,
+        'id_wilayah'   => $id_wilayah,
+        'status'       => $status,
     ]);
 
     // 2. Validasi Nama
@@ -56,36 +75,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['nama'] = 'Nama lengkap minimal 3 karakter.';
     }
 
-    // 3. Validasi Email
-    if ($email === '') {
-        $errors['email'] = 'Alamat email wajib diisi.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = 'Format alamat email tidak valid.';
+    // 3. Validasi Username
+    if ($username === '') {
+        $errors['username'] = 'Username wajib diisi.';
+    } elseif (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
+        $errors['username'] = 'Username hanya boleh huruf, angka, underscore (3-30 karakter).';
     } else {
-        // Cek duplikasi email di database
+        // Cek keunikan username
         try {
-            $check_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-            $check_stmt->execute([$email]);
-            if ($check_stmt->fetch()) {
-                $errors['email'] = 'Email ini sudah terdaftar di sistem. Gunakan email lain.';
+            $stmt = $pdo->prepare("SELECT id_user FROM user WHERE username = ? LIMIT 1");
+            $stmt->execute([$username]);
+            if ($stmt->fetch()) {
+                $errors['username'] = 'Username ini sudah digunakan. Silakan pilih username lain.';
             }
         } catch (PDOException $e) {
-            $errors[] = 'Gagal memeriksa ketersediaan email: ' . $e->getMessage();
+            $errors[] = 'Gagal memeriksa ketersediaan username: ' . $e->getMessage();
         }
     }
 
-    // 4. Validasi Role
-    $valid_role_ids = array_column($roles_list, 'id');
-    if ($role_id === '' || !in_array($role_id, $valid_role_ids)) {
-        $errors['role_id'] = 'Silakan pilih peran (role) yang valid.';
+    // 4. Validasi Email (Opsional, tapi jika diisi harus valid & unik)
+    if ($email !== '') {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Format alamat email tidak valid.';
+        } else {
+            try {
+                $stmt = $pdo->prepare("SELECT id_user FROM user WHERE email = ? LIMIT 1");
+                $stmt->execute([$email]);
+                if ($stmt->fetch()) {
+                    $errors['email'] = 'Email ini sudah terdaftar di sistem. Gunakan email lain.';
+                }
+            } catch (PDOException $e) {
+                $errors[] = 'Gagal memeriksa email: ' . $e->getMessage();
+            }
+        }
+    } else {
+        $email = null;
     }
 
-    // 5. Validasi Status
-    if (!in_array($status, ['aktif', 'nonaktif'], true)) {
-        $status = 'aktif';
+    // 5. Validasi Role
+    $valid_role_ids = array_column($roles_list, 'id_role');
+    if ($id_role === '' || !in_array($id_role, $valid_role_ids)) {
+        $errors['id_role'] = 'Silakan pilih peran (role) yang valid.';
     }
 
-    // 6. Validasi Password
+    // 6. Validasi Status
+    if (!in_array(strtolower($status), ['aktif', 'nonaktif'], true)) {
+        $status = 'Aktif';
+    } else {
+        $status = ucfirst(strtolower($status));
+    }
+
+    // 7. Validasi Password
     if ($password === '') {
         $errors['password'] = 'Password wajib diisi.';
     } elseif (strlen($password) < 6) {
@@ -96,25 +136,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['password_confirm'] = 'Konfirmasi password tidak cocok.';
     }
 
-    // 7. Jika tidak ada error, eksekusi INSERT
+    // 8. Jika tidak ada error, eksekusi INSERT
     if (empty($errors)) {
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $insert_sql = "
-                INSERT INTO users (nama, email, password, role_id, status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                INSERT INTO user 
+                (id_role, id_posyandu, id_puskesmas, id_wilayah, nama, username, password_hash, email, no_telepon, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ";
             $insert_stmt = $pdo->prepare($insert_sql);
             $insert_stmt->execute([
+                (int) $id_role,
+                $id_posyandu,
+                $id_puskesmas,
+                $id_wilayah,
                 $nama,
-                $email,
+                $username,
                 $hashed_password,
-                (int) $role_id,
+                $email,
+                $no_telepon ?: null,
                 $status,
             ]);
 
             clear_old_input();
-            set_flash('success', "Pengguna <strong>" . e($nama) . "</strong> berhasil ditambahkan.");
+            set_flash('success', "Pengguna <strong>" . e($nama) . "</strong> (@" . e($username) . ") berhasil ditambahkan.");
             redirect(base_url('modules/utilitas/pengguna/index.php'));
         } catch (PDOException $e) {
             $errors[] = 'Gagal menyimpan pengguna ke database: ' . $e->getMessage();
@@ -194,45 +240,71 @@ require_once ROOT_PATH . '/includes/header.php';
             <?php endif; ?>
           </div>
 
+          <!-- Username -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="username">
+              Username <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">@</span>
+              <input type="text"
+                     class="form-control <?= isset($errors['username']) ? 'is-invalid' : '' ?>"
+                     id="username"
+                     name="username"
+                     placeholder="contoh: sitirahma"
+                     value="<?= e(old('username')) ?>"
+                     required>
+            </div>
+            <?php if (isset($errors['username'])): ?>
+              <div class="text-danger small mt-1"><?= e($errors['username']) ?></div>
+            <?php else: ?>
+              <div class="form-text">Digunakan sebagai ID unik untuk login.</div>
+            <?php endif; ?>
+          </div>
+
           <!-- Email -->
           <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold" for="email">
-              Alamat Email <span class="text-danger">*</span>
-            </label>
+            <label class="form-label fw-semibold" for="email">Alamat Email</label>
             <input type="email"
                    class="form-control <?= isset($errors['email']) ? 'is-invalid' : '' ?>"
                    id="email"
                    name="email"
                    placeholder="nama@contoh.id"
-                   value="<?= e(old('email')) ?>"
-                   required>
+                   value="<?= e(old('email')) ?>">
             <?php if (isset($errors['email'])): ?>
               <div class="invalid-feedback"><?= e($errors['email']) ?></div>
-            <?php else: ?>
-              <div class="form-text">Digunakan sebagai identitas saat login ke sistem.</div>
             <?php endif; ?>
+          </div>
+
+          <!-- No Telepon -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="no_telepon">Nomor Telepon / WhatsApp</label>
+            <input type="tel"
+                   class="form-control"
+                   id="no_telepon"
+                   name="no_telepon"
+                   placeholder="08123456789"
+                   value="<?= e(old('no_telepon')) ?>">
           </div>
 
           <!-- Peran / Role -->
           <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold" for="role_id">
+            <label class="form-label fw-semibold" for="id_role">
               Peran (Role) <span class="text-danger">*</span>
             </label>
-            <select class="form-select <?= isset($errors['role_id']) ? 'is-invalid' : '' ?>"
-                    id="role_id"
-                    name="role_id"
+            <select class="form-select <?= isset($errors['id_role']) ? 'is-invalid' : '' ?>"
+                    id="id_role"
+                    name="id_role"
                     required>
               <option value="">-- Pilih Peran --</option>
               <?php foreach ($roles_list as $r): ?>
-                <option value="<?= $r['id'] ?>" <?= (string)old('role_id') === (string)$r['id'] ? 'selected' : '' ?>>
+                <option value="<?= $r['id_role'] ?>" <?= (string)old('id_role') === (string)$r['id_role'] ? 'selected' : '' ?>>
                   <?= e($r['nama_role']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <?php if (isset($errors['role_id'])): ?>
-              <div class="invalid-feedback"><?= e($errors['role_id']) ?></div>
-            <?php else: ?>
-              <div class="form-text">Menentukan menu dan hak akses yang dapat dibuka pengguna.</div>
+            <?php if (isset($errors['id_role'])): ?>
+              <div class="invalid-feedback"><?= e($errors['id_role']) ?></div>
             <?php endif; ?>
           </div>
 
@@ -242,10 +314,35 @@ require_once ROOT_PATH . '/includes/header.php';
               Status Akun <span class="text-danger">*</span>
             </label>
             <select class="form-select" id="status" name="status" required>
-              <option value="aktif" <?= old('status', 'aktif') === 'aktif' ? 'selected' : '' ?>>Aktif (Dapat Login)</option>
-              <option value="nonaktif" <?= old('status') === 'nonaktif' ? 'selected' : '' ?>>Nonaktif (Akses Dibekukan)</option>
+              <option value="Aktif" <?= old('status', 'Aktif') === 'Aktif' ? 'selected' : '' ?>>Aktif (Dapat Login)</option>
+              <option value="Nonaktif" <?= old('status') === 'Nonaktif' ? 'selected' : '' ?>>Nonaktif (Akses Dibekukan)</option>
             </select>
-            <div class="form-text">Pengguna nonaktif tidak akan bisa masuk ke aplikasi.</div>
+          </div>
+
+          <!-- Penugasan Posyandu (Opsional) -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="id_posyandu">Penugasan Posyandu (Khusus Kader)</label>
+            <select class="form-select" id="id_posyandu" name="id_posyandu">
+              <option value="">-- Tanpa Penugasan Posyandu --</option>
+              <?php foreach ($posyandu_list as $p): ?>
+                <option value="<?= $p['id_posyandu'] ?>" <?= (string)old('id_posyandu') === (string)$p['id_posyandu'] ? 'selected' : '' ?>>
+                  <?= e($p['nama_posyandu']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Penugasan Puskesmas (Opsional) -->
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold" for="id_puskesmas">Penugasan Puskesmas</label>
+            <select class="form-select" id="id_puskesmas" name="id_puskesmas">
+              <option value="">-- Tanpa Penugasan Puskesmas --</option>
+              <?php foreach ($puskesmas_list as $pk): ?>
+                <option value="<?= $pk['id_puskesmas'] ?>" <?= (string)old('id_puskesmas') === (string)$pk['id_puskesmas'] ? 'selected' : '' ?>>
+                  <?= e($pk['nama_puskesmas']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
 
           <div class="col-12"><hr class="my-2 text-muted"></div>
@@ -314,7 +411,7 @@ require_once ROOT_PATH . '/includes/header.php';
             <span class="activity-dot bg-primary"></span>
             <div>
               <p class="mb-1 fw-semibold text-primary">Admin</p>
-              <p class="text-muted small mb-0">Akses penuh ke semua modul sistem, termasuk Utilitas Pengguna dan Pengaturan Otorisasi.</p>
+              <p class="text-muted small mb-0">Akses penuh ke seluruh sistem, master data, dan pengelolaan akun.</p>
             </div>
           </div>
 
@@ -322,15 +419,15 @@ require_once ROOT_PATH . '/includes/header.php';
             <span class="activity-dot bg-info"></span>
             <div>
               <p class="mb-1 fw-semibold text-info">Kader</p>
-              <p class="text-muted small mb-0">Pencatatan data balita, input penimbangan, pengukuran tinggi badan, dan input gizi di posyandu.</p>
+              <p class="text-muted small mb-0">Input data balita, penimbangan posyandu, dan pengukuran gizi bulanan.</p>
             </div>
           </div>
 
           <div class="activity-item">
             <span class="activity-dot bg-success"></span>
             <div>
-              <p class="mb-1 fw-semibold text-success">Petugas Puskesmas</p>
-              <p class="text-muted small mb-0">Validasi status gizi, pantau indikator stunting, dan generate laporan rekapitulasi posyandu.</p>
+              <p class="mb-1 fw-semibold text-success">Bidan / Petugas Puskesmas</p>
+              <p class="text-muted small mb-0">Validasi status gizi, pantau stunting, dan input catatan intervensi.</p>
             </div>
           </div>
 
@@ -338,14 +435,14 @@ require_once ROOT_PATH . '/includes/header.php';
             <span class="activity-dot bg-warning"></span>
             <div>
               <p class="mb-1 fw-semibold text-warning">Koordinator Desa</p>
-              <p class="text-muted small mb-0">Monitoring capaian dan grafik perkembangan status gizi balita se-tingkat desa.</p>
+              <p class="text-muted small mb-0">Monitoring capaian status gizi balita dan grafik pemantauan desa.</p>
             </div>
           </div>
         </div>
 
         <div class="alert alert-info mt-3 mb-0 small">
           <i class="bi bi-info-circle me-1"></i>
-          <strong>Keamanan Sandi:</strong> Password akan otomatis dienkripsi dengan standar <code>bcrypt</code> saat disimpan.
+          <strong>Keamanan Sandi:</strong> Password dienkripsi dengan standar <code>bcrypt</code> pada kolom <code>password_hash</code>.
         </div>
       </div>
     </div>

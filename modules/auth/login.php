@@ -19,43 +19,47 @@ if (!empty($_SESSION['user_id'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email'] ?? '');
+    $login_id = trim($_POST['email'] ?? $_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     // Validasi input kosong
-    if ($email === '' || $password === '') {
-        $error = 'Email dan password wajib diisi.';
+    if ($login_id === '' || $password === '') {
+        $error = 'Username/Email dan password wajib diisi.';
 
     // Cek koneksi database
     } elseif ($pdo === null) {
-        $error = 'Database belum tersedia. Pastikan MySQL aktif dan database sudah dibuat (lihat Fase 2).';
+        $error = 'Database belum tersedia. Pastikan MySQL aktif dan database db_sipantau_gizi sudah dibuat.';
 
     } else {
-        // Cari user berdasarkan email
+        // Cari user berdasarkan username atau email
         $stmt = $pdo->prepare('
-            SELECT u.id, u.nama, u.email, u.password, u.status,
-                   u.role_id, r.nama_role
-            FROM users u
-            JOIN roles r ON r.id = u.role_id
-            WHERE u.email = :email
+            SELECT u.id_user, u.nama, u.username, u.email, u.password_hash, u.status,
+                   u.id_role, r.nama_role, u.id_posyandu, u.id_puskesmas, u.id_wilayah
+            FROM user u
+            JOIN role r ON r.id_role = u.id_role
+            WHERE u.username = ? OR u.email = ?
             LIMIT 1
         ');
-        $stmt->execute([':email' => $email]);
+        $stmt->execute([$login_id, $login_id]);
         $user = $stmt->fetch();
 
         if (!$user) {
-            $error = 'Email atau password salah.';
-        } elseif ($user['status'] !== 'aktif') {
-            $error = 'Akun Anda tidak aktif. Hubungi administrator.';
-        } elseif (!password_verify($password, $user['password'])) {
-            $error = 'Email atau password salah.';
+            $error = 'Username/email atau password salah.';
+        } elseif (strcasecmp($user['status'], 'Aktif') !== 0) {
+            $error = 'Akun Anda sedang dinonaktifkan. Hubungi administrator.';
+        } elseif (!password_verify($password, $user['password_hash'])) {
+            $error = 'Username/email atau password salah.';
         } else {
             // Login berhasil — simpan data ke session
-            $_SESSION['user_id']        = $user['id'];
+            $_SESSION['user_id']        = $user['id_user'];
             $_SESSION['user_nama']      = $user['nama'];
+            $_SESSION['user_username']  = $user['username'];
             $_SESSION['user_email']     = $user['email'];
-            $_SESSION['role_id']        = $user['role_id'];
+            $_SESSION['role_id']        = $user['id_role'];
             $_SESSION['user_role_nama'] = $user['nama_role'];
+            $_SESSION['user_posyandu']  = $user['id_posyandu'];
+            $_SESSION['user_puskesmas'] = $user['id_puskesmas'];
+            $_SESSION['user_wilayah']   = $user['id_wilayah'];
 
             set_flash('success', 'Selamat datang, ' . $user['nama'] . '!');
             redirect(base_url('modules/dashboard/index.php'));
@@ -124,9 +128,10 @@ $flash = get_flash();
         <?php endif; ?>
 
         <div class="mb-3">
-          <label class="form-label" for="loginEmail">Alamat Email</label>
-          <input class="form-control" id="loginEmail" name="email" type="email"
-                 value="<?= e($email ?? '') ?>" required autofocus>
+          <label class="form-label" for="loginEmail">Username atau Email</label>
+          <input class="form-control" id="loginEmail" name="email" type="text"
+                 placeholder="admin atau admin@sipantau.test"
+                 value="<?= e($login_id ?? '') ?>" required autofocus>
         </div>
 
         <div class="mb-3">

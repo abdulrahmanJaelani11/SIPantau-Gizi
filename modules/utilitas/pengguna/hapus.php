@@ -3,13 +3,16 @@
  * Modul Utilitas — Hapus Pengguna (Proses POST)
  * =============================================
  * Menangani penghapusan akun pengguna dengan proteksi CSRF dan proteksi akun sendiri.
+ * Disesuaikan dengan arsitektur database db_sipantau_gizi (tabel user).
  */
 
 require_once __DIR__ . '/../../../config/app.php';
 require_once ROOT_PATH . '/includes/auth-guard.php';
 
-// Pastikan hanya role Admin yang bisa menghapus akun pengguna
-if (($_SESSION['user_role_nama'] ?? '') !== 'Admin' && ($_SESSION['role_id'] ?? 0) != 1) {
+// Pastikan hanya role Admin yang bisa menghapus akun pengguna (id_role = 4)
+$user_role = $_SESSION['user_role_nama'] ?? '';
+$user_role_id = $_SESSION['role_id'] ?? 0;
+if (strcasecmp($user_role, 'Admin') !== 0 && $user_role_id != 4) {
     set_flash('danger', 'Akses ditolak. Tindakan ini hanya untuk Administrator.');
     redirect(base_url('modules/dashboard/index.php'));
 }
@@ -41,7 +44,7 @@ if ($user_id === (int) $_SESSION['user_id']) {
 
 // Cek apakah data pengguna ada di database
 try {
-    $stmt = $pdo->prepare("SELECT id, nama FROM users WHERE id = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id_user, nama, username FROM user WHERE id_user = ? LIMIT 1");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch();
 
@@ -50,11 +53,11 @@ try {
         redirect(base_url('modules/utilitas/pengguna/index.php'));
     }
 
-    // Eksekusi penghapusan
-    $delete_stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    // Eksekusi penghapusan dari tabel user
+    $delete_stmt = $pdo->prepare("DELETE FROM user WHERE id_user = ?");
     $delete_stmt->execute([$user_id]);
 
-    set_flash('success', "Pengguna <strong>" . e($user['nama']) . "</strong> berhasil dihapus dari sistem.");
+    set_flash('success', "Pengguna <strong>" . e($user['nama']) . "</strong> (@" . e($user['username']) . ") berhasil dihapus dari sistem.");
 } catch (PDOException $e) {
     set_flash('danger', 'Gagal menghapus pengguna: ' . $e->getMessage());
 }
