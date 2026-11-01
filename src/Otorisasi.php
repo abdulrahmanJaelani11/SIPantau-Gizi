@@ -330,7 +330,7 @@ class Otorisasi
                         (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
                         (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', 'modules/pengukuran/index.php', 'Data & Laporan', 3),
                         (9, 'Jadwal & Kunjungan', 'jadwal', 'bi-calendar-check', 'modules/jadwal/index.php', 'Data & Laporan', 4),
-                        (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 5),
+                        (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', 'modules/laporan/index.php', 'Data & Laporan', 5),
                         (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 6),
                         (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 7),
                         (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 8),

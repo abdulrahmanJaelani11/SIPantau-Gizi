@@ -91,7 +91,7 @@ if (empty($sidebar_menus)) {
         ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
         ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => base_url('modules/pengukuran/index.php')],
         ['slug' => 'jadwal',       'nama' => 'Jadwal & Kunjungan', 'icon' => 'bi-calendar-check','url' => base_url('modules/jadwal/index.php')],
-        ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => '#'],
+        ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => base_url('modules/laporan/index.php')],
         ['type' => 'label', 'nama' => 'Master Data'],
         ['slug' => 'posyandu',     'nama' => 'Data Posyandu',      'icon' => 'bi-hospital',      'url' => '#'],
         ['slug' => 'puskesmas',    'nama' => 'Data Puskesmas',     'icon' => 'bi-building',      'url' => base_url('modules/master/puskesmas/index.php')],
