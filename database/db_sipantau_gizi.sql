@@ -40,6 +40,7 @@ CREATE TABLE `posyandu` (
   `id_puskesmas` int(11) NOT NULL,
   `id_wilayah` int(11) NOT NULL,
   `nama_posyandu` varchar(100) NOT NULL,
+  `dusun_rw` varchar(100) DEFAULT NULL,
   `alamat` text DEFAULT NULL,
   PRIMARY KEY (`id_posyandu`),
   KEY `fk_posyandu_puskesmas` (`id_puskesmas`),
@@ -48,9 +49,9 @@ CREATE TABLE `posyandu` (
   CONSTRAINT `fk_posyandu_wilayah` FOREIGN KEY (`id_wilayah`) REFERENCES `wilayah` (`id_wilayah`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `posyandu` (`id_posyandu`, `id_puskesmas`, `id_wilayah`, `nama_posyandu`, `alamat`) VALUES
-  ('1', '1', '1', 'Posyandu Melati 01', 'RW 01 Sukamaju'),
-  ('2', '1', '1', 'Posyandu Mawar 02', 'RW 02 Sukamaju');
+INSERT INTO `posyandu` (`id_posyandu`, `id_puskesmas`, `id_wilayah`, `nama_posyandu`, `dusun_rw`, `alamat`) VALUES
+  ('1', '1', '1', 'Posyandu Melati 01', 'RW 01', 'Sukamaju'),
+  ('2', '1', '1', 'Posyandu Mawar 02', 'RW 02', 'Sukamaju');
 
 DROP TABLE IF EXISTS `role_menu`;
 DROP TABLE IF EXISTS `menu`;
@@ -86,10 +87,10 @@ CREATE TABLE `menu` (
 
 INSERT INTO `menu` (`id_menu`, `nama_menu`, `slug`, `icon`, `url`, `kategori`, `urutan`) VALUES
   (1, 'Dashboard', 'dashboard', 'bi-speedometer2', 'modules/dashboard/index.php', 'Utama', 1),
-  (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
+  (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', 'modules/data-anak/index.php', 'Data & Laporan', 2),
   (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', '#', 'Data & Laporan', 3),
   (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', '#', 'Data & Laporan', 4),
-  (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 5),
+  (5, 'Data Posyandu', 'posyandu', 'bi-hospital', 'modules/posyandu/index.php', 'Master Data', 5),
   (6, 'Data Puskesmas', 'puskesmas', 'bi-building', '#', 'Master Data', 6),
   (7, 'Daftar Pengguna', 'pengguna', 'bi-people', 'modules/utilitas/pengguna/index.php', 'Utilitas', 7),
   (8, 'Role & Otorisasi', 'role', 'bi-shield-lock', 'modules/utilitas/role/index.php', 'Utilitas', 8);
