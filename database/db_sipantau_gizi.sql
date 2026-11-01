@@ -174,7 +174,7 @@ CREATE TABLE `menu` (
 
 LOCK TABLES `menu` WRITE;
 /*!40000 ALTER TABLE `menu` DISABLE KEYS */;
-INSERT INTO `menu` VALUES (1,'Dashboard','dashboard','bi-speedometer2','modules/dashboard/index.php','Utama',NULL,1),(2,'Data Balita & Anak','data-anak','bi-person-hearts','modules/data-anak/index.php','Data & Laporan',NULL,2),(3,'Pengukuran Gizi','pengukuran','bi-rulers','modules/pengukuran/index.php','Data & Laporan',NULL,3),(4,'Laporan & Grafik','laporan-gizi','bi-bar-chart-line','#','Data & Laporan',NULL,5),(5,'Data Posyandu','posyandu','bi-hospital','modules/posyandu/index.php','Master Data',NULL,5),(6,'Data Puskesmas','puskesmas','bi-building','modules/master/puskesmas/index.php','Master Data',NULL,6),(7,'Daftar Pengguna','pengguna','bi-people','modules/utilitas/pengguna/index.php','Utilitas',NULL,7),(8,'Role & Otorisasi','role','bi-shield-lock','modules/utilitas/role/index.php','Utilitas',NULL,8),(9,'Jadwal & Kunjungan','jadwal','bi-calendar-check','modules/jadwal/index.php','Data & Laporan',NULL,4);
+INSERT INTO `menu` VALUES (1,'Dashboard','dashboard','bi-speedometer2','modules/dashboard/index.php','Utama',NULL,1),(2,'Data Balita & Anak','data-anak','bi-person-hearts','modules/data-anak/index.php','Data & Laporan',NULL,2),(3,'Pengukuran Gizi','pengukuran','bi-rulers','modules/pengukuran/index.php','Data & Laporan',NULL,3),(10,'Daftar Pantau','daftar-pantau','bi-clipboard2-pulse','modules/daftar-pantau/index.php','Data & Laporan',NULL,4),(9,'Jadwal & Kunjungan','jadwal','bi-calendar-check','modules/jadwal/index.php','Data & Laporan',NULL,5),(4,'Laporan & Grafik','laporan-gizi','bi-bar-chart-line','modules/laporan/index.php','Data & Laporan',NULL,6),(5,'Data Posyandu','posyandu','bi-hospital','modules/posyandu/index.php','Master Data',NULL,5),(6,'Data Puskesmas','puskesmas','bi-building','modules/master/puskesmas/index.php','Master Data',NULL,6),(7,'Daftar Pengguna','pengguna','bi-people','modules/utilitas/pengguna/index.php','Utilitas',NULL,7),(8,'Role & Otorisasi','role','bi-shield-lock','modules/utilitas/role/index.php','Utilitas',NULL,8),(11,'Profil Saya','profil','bi-person-circle','modules/profil/index.php','Utilitas',NULL,9);
 /*!40000 ALTER TABLE `menu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -386,7 +386,7 @@ CREATE TABLE `role_menu` (
 
 LOCK TABLES `role_menu` WRITE;
 /*!40000 ALTER TABLE `role_menu` DISABLE KEYS */;
-INSERT INTO `role_menu` VALUES (9,1,1),(10,1,2),(11,1,3),(12,1,5),(24,1,9),(13,2,1),(14,2,2),(15,2,3),(16,2,4),(17,2,5),(18,2,6),(25,2,9),(19,3,1),(20,3,4),(21,3,5),(22,3,6),(26,3,9),(1,4,1),(2,4,2),(3,4,3),(4,4,4),(5,4,5),(6,4,6),(7,4,7),(8,4,8),(23,4,9);
+INSERT INTO `role_menu` VALUES (9,1,1),(10,1,2),(11,1,3),(12,1,5),(24,1,9),(27,1,10),(31,1,11),(13,2,1),(14,2,2),(15,2,3),(16,2,4),(17,2,5),(18,2,6),(25,2,9),(28,2,10),(32,2,11),(19,3,1),(20,3,4),(21,3,5),(22,3,6),(26,3,9),(29,3,10),(33,3,11),(1,4,1),(2,4,2),(3,4,3),(4,4,4),(5,4,5),(6,4,6),(7,4,7),(8,4,8),(23,4,9),(30,4,10),(34,4,11);
 /*!40000 ALTER TABLE `role_menu` ENABLE KEYS */;
 UNLOCK TABLES;
 

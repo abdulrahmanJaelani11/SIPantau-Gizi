@@ -42,7 +42,7 @@ class Otorisasi
         $slug = trim($slug);
 
         // Dashboard selalu dapat diakses oleh semua pengguna yang sudah login
-        if ($slug === 'dashboard') {
+        if ($slug === 'dashboard' || $slug === 'profil') {
             return true;
         }
 
@@ -87,6 +87,9 @@ class Otorisasi
             // Pastikan dashboard selalu ada
             if (!in_array('dashboard', $slugs, true)) {
                 $slugs[] = 'dashboard';
+            }
+            if (!in_array('profil', $slugs, true)) {
+                $slugs[] = 'profil';
             }
 
             self::$cache[$role_id] = $slugs;
@@ -329,6 +332,7 @@ class Otorisasi
                         (1, 'Dashboard', 'dashboard', 'bi-speedometer2', 'modules/dashboard/index.php', 'Utama', 1),
                         (2, 'Data Balita & Anak', 'data-anak', 'bi-person-hearts', '#', 'Data & Laporan', 2),
                         (3, 'Pengukuran Gizi', 'pengukuran', 'bi-rulers', 'modules/pengukuran/index.php', 'Data & Laporan', 3),
+                        (10, 'Daftar Pantau', 'daftar-pantau', 'bi-clipboard2-pulse', 'modules/daftar-pantau/index.php', 'Data & Laporan', 4),
                         (9, 'Jadwal & Kunjungan', 'jadwal', 'bi-calendar-check', 'modules/jadwal/index.php', 'Data & Laporan', 4),
                         (4, 'Laporan & Grafik', 'laporan-gizi', 'bi-bar-chart-line', 'modules/laporan/index.php', 'Data & Laporan', 5),
                         (5, 'Data Posyandu', 'posyandu', 'bi-hospital', '#', 'Master Data', 6),

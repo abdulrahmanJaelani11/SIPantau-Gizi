@@ -41,7 +41,7 @@ $user_role = $_SESSION['user_role_nama'] ?? '';
   <link rel="stylesheet" href="<?= asset('vendors/bootstrap-icons/bootstrap-icons.css') ?>">
   <link rel="stylesheet" href="<?= asset('vendors/select2/css/select2.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('vendors/select2/css/select2-bootstrap-5-theme.min.css') ?>">
-  <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
+  <link rel="stylesheet" href="<?= asset('css/style.css') ?>?v=<?= file_exists(ROOT_PATH . '/assets/css/style.css') ? filemtime(ROOT_PATH . '/assets/css/style.css') : '1.0' ?>">
   <?php if (!empty($extra_css)) echo $extra_css; ?>
 </head>
 
@@ -84,7 +84,13 @@ $user_role = $_SESSION['user_role_nama'] ?? '';
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <a class="dropdown-item" href="<?= base_url('modules/auth/logout.php') ?>">
+                  <a class="dropdown-item <?= ($current_slug === 'profil') ? 'active' : '' ?>" href="<?= base_url('modules/profil/index.php') ?>">
+                    <i class="bi bi-person-circle me-1"></i> Profil Saya
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item text-danger" href="<?= base_url('modules/auth/logout.php') ?>">
                     <i class="bi bi-box-arrow-left me-1"></i> Keluar
                   </a>
                 </li>
