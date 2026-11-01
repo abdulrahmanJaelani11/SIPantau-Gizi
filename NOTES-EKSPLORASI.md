@@ -110,9 +110,24 @@ Berdasarkan analisa menu di template serta kebutuhan fungsional aplikasi **SiPan
 
 ---
 
-## 5. Rencana Langkah Selanjutnya (Fase 1)
-1. Membuat struktur folder PHP native sesuai rencana: `config/`, `includes/`, `src/`, `modules/`.
-2. Menyusun file konfigurasi `config/database.php` (koneksi PDO) dan `config/app.php` (konstanta `BASE_URL`, `APP_NAME`, session init).
-3. Mengekstrak layout bersama ke `includes/header.php`, `includes/sidebar.php`, `includes/footer.php`, dan `includes/auth-guard.php`.
-4. Membuat halaman autentikasi dasar: `modules/auth/login.php` dan `modules/auth/logout.php`.
-5. Menyiapkan `index.php` di root untuk me-redirect ke dashboard atau halaman login.
+## 5. Rencana Langkah Selanjutnya & Status Implementasi
+1. [x] Membuat struktur folder PHP native sesuai rencana: `config/`, `includes/`, `src/`, `modules/`.
+2. [x] Menyusun file konfigurasi `config/database.php` (koneksi PDO) dan `config/app.php` (konstanta `BASE_URL`, `APP_NAME`, session init).
+3. [x] Mengekstrak layout bersama ke `includes/header.php`, `includes/sidebar.php`, `includes/footer.php`, dan `includes/auth-guard.php`.
+4. [x] Membuat halaman autentikasi dasar: `modules/auth/login.php` dan `modules/auth/logout.php`.
+5. [x] Menyiapkan `index.php` di root untuk me-redirect ke dashboard atau halaman login.
+6. [x] Mengembangkan Modul Pengguna (`modules/utilitas/pengguna/`): CRUD lengkap, filter peran & status, proteksi CSRF.
+7. [x] Mengembangkan Modul Role & Otorisasi (`modules/utilitas/role/`):
+   - Tabel `role` disempurnakan dengan kolom `deskripsi`, `created_at`, `updated_at`.
+   - Tabel `menu` dan `role_menu` diintegrasikan secara terelasi dengan ON DELETE CASCADE.
+   - Kelas RBAC `src/Otorisasi.php` dengan pengecekan `bolehAkses($role_id, $slug)` dan bypass Super Admin.
+   - `includes/auth-guard.php` terintegrasi dengan proteksi akses per menu otomatis.
+   - `includes/sidebar.php` dinamis merender menu sesuai otorisasi peran pengguna yang sedang aktif.
+   - CRUD Role & Otorisasi:
+     - `index.php`: Daftar peran, metrik ringkasan, preview otorisasi, badge terproteksi/kustom, modal konfirmasi hapus.
+     - `tambah.php`: Formulir penambahan peran baru beserta matriks checklist menu dengan tombol Pilih/Batal Semua.
+     - `edit.php`: Perubahan nama, deskripsi wewenang, dan sinkronisasi otorisasi menu secara atomik.
+     - `detail.php`: Profil spesifikasi peran, daftar akun pengguna tertaut, dan status detail hak akses menu.
+     - `otorisasi.php`: Matriks RBAC global menyeluruh antar semua peran dan modul menu dalam satu tabel terpadu.
+     - `hapus.php`: Penghapusan peran dengan proteksi berjenjang (Super Admin, Role Sistem, Role Berpenghuni).
+

@@ -112,6 +112,13 @@ try {
     set_flash('danger', 'Gagal memuat data pengguna: ' . $e->getMessage());
 }
 
+// Query parameter untuk tautan ekspor
+$export_query = http_build_query(array_filter([
+    'search' => $search,
+    'role'   => $filter_role,
+    'status' => $filter_status,
+]));
+
 // Helper badge role (kompatibel PHP 7.4+)
 function get_role_badge_class(?string $role_name): string {
     switch (trim($role_name ?? '')) {
@@ -153,7 +160,27 @@ require_once ROOT_PATH . '/includes/header.php';
       <p class="text-muted mb-0">Kelola akun pengguna, penugasan role, dan status aktif akun.</p>
     </div>
   </div>
-  <div class="heading-actions">
+  <div class="heading-actions d-flex gap-2">
+    <!-- Dropdown Ekspor Data -->
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download me-1" aria-hidden="true"></i> Ekspor Data
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <li><h6 class="dropdown-header small">Format Ekspor</h6></li>
+        <li>
+          <a class="dropdown-item small" href="<?= base_url('modules/utilitas/pengguna/ekspor.php?format=csv' . (!empty($export_query) ? '&' . $export_query : '')) ?>">
+            <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i> Ekspor ke CSV / Excel (.csv)
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item small" target="_blank" href="<?= base_url('modules/utilitas/pengguna/ekspor.php?format=print' . (!empty($export_query) ? '&' . $export_query : '')) ?>">
+            <i class="bi bi-printer text-primary me-2"></i> Cetak Dokumen / PDF
+          </a>
+        </li>
+      </ul>
+    </div>
+
     <a class="btn btn-primary btn-sm" href="<?= base_url('modules/utilitas/pengguna/tambah.php') ?>">
       <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Tambah Pengguna
     </a>
@@ -267,7 +294,6 @@ require_once ROOT_PATH . '/includes/header.php';
     <table class="table align-middle mb-0" id="usersTable">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 50px;">#</th>
           <th scope="col">Pengguna</th>
           <th scope="col">Role</th>
           <th scope="col">Penugasan</th>
@@ -286,13 +312,12 @@ require_once ROOT_PATH . '/includes/header.php';
             </td>
           </tr>
         <?php else: ?>
-          <?php foreach ($users as $index => $u): ?>
+          <?php foreach ($users as $u): ?>
             <?php 
               $is_current_user = ((int)$u['id_user'] === (int)$_SESSION['user_id']);
               $is_active = (strcasecmp($u['status'], 'aktif') === 0);
             ?>
             <tr>
-              <td class="text-muted small"><?= $index + 1 ?></td>
               <td>
                 <div class="d-flex align-items-center gap-2">
                   <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center text-white fw-bold bg-primary bg-gradient"

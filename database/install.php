@@ -80,14 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         <div class="alert alert-info py-2 small">
           <i class="bi bi-info-circle me-1"></i>
           Script ini akan mengimpor database <code>db_sipantau_gizi</code>,
-          13 tabel terelasi, serta data awal sistem.
+          15 tabel terelasi, serta data awal sistem (termasuk Role & Otorisasi Menu).
         </div>
 
         <table class="table table-sm small mb-3">
           <tr><td class="fw-semibold">Host</td><td><?= $db_host ?>:<?= $db_port ?></td></tr>
           <tr><td class="fw-semibold">Database</td><td><?= $db_name ?></td></tr>
           <tr><td class="fw-semibold">User DB</td><td><?= $db_user ?></td></tr>
-          <tr><td class="fw-semibold">Tabel (13)</td><td>role, user, wilayah, posyandu, puskesmas, orangtua, anak, jadwal_posyandu, kehadiran, pengukuran, status_gizi, pemantauan, catatan_intervensi</td></tr>
+          <tr><td class="fw-semibold">Tabel (15)</td><td>role, menu, role_menu, user, wilayah, posyandu, puskesmas, orangtua, anak, jadwal_posyandu, kehadiran, pengukuran, status_gizi, pemantauan, catatan_intervensi</td></tr>
           <tr><td class="fw-semibold">Akun Admin</td><td>Username: <code>admin</code> / Password: <code>admin123</code></td></tr>
         </table>
 

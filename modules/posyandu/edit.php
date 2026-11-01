@@ -1,0 +1,6 @@
+<?php
+require_once __DIR__.'/_common.php';$current_slug='posyandu';require_once ROOT_PATH.'/includes/auth-guard.php';$id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);$record=$id?posyandu_get($id):null;if(!$record){set_flash('warning','Data posyandu tidak ditemukan.');redirect(posyandu_url());}$page_title='Ubah Posyandu';$error='';
+if($_SERVER['REQUEST_METHOD']==='POST'){try{posyandu_save((int)$id);set_flash('success','Data posyandu berhasil diperbarui.');redirect(posyandu_url());}catch(Throwable $ex){$error=$ex instanceof InvalidArgumentException?$ex->getMessage():'Data gagal diperbarui. Periksa kembali pilihan wilayah dan puskesmas.';}}
+require ROOT_PATH.'/includes/header.php'; ?>
+<div class="mb-4"><a href="<?= posyandu_url() ?>" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Kembali</a><h1 class="h3 mt-2">Ubah Data Posyandu</h1></div><?php if($error): ?><div class="alert alert-danger"><?= e($error) ?></div><?php endif; ?><form method="post"><?= csrf_field() ?><?php posyandu_form($record); ?><div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-light" href="<?= posyandu_url() ?>">Batal</a><button class="btn btn-primary">Simpan Perubahan</button></div></form>
+<?php require ROOT_PATH.'/includes/footer.php'; ?>
