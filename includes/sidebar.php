@@ -90,6 +90,7 @@ if (empty($sidebar_menus)) {
         ['type' => 'label', 'nama' => 'Data & Laporan'],
         ['slug' => 'data-anak',    'nama' => 'Data Balita & Anak', 'icon' => 'bi-person-hearts', 'url' => '#'],
         ['slug' => 'pengukuran',   'nama' => 'Pengukuran Gizi',    'icon' => 'bi-rulers',        'url' => base_url('modules/pengukuran/index.php')],
+        ['slug' => 'daftar-pantau','nama' => 'Daftar Pantau',      'icon' => 'bi-clipboard2-pulse','url' => base_url('modules/daftar-pantau/index.php')],
         ['slug' => 'jadwal',       'nama' => 'Jadwal & Kunjungan', 'icon' => 'bi-calendar-check','url' => base_url('modules/jadwal/index.php')],
         ['slug' => 'laporan-gizi', 'nama' => 'Laporan & Grafik',   'icon' => 'bi-bar-chart-line','url' => base_url('modules/laporan/index.php')],
         ['type' => 'label', 'nama' => 'Master Data'],
@@ -98,6 +99,7 @@ if (empty($sidebar_menus)) {
         ['type' => 'label', 'nama' => 'Utilitas'],
         ['slug' => 'pengguna',     'nama' => 'Daftar Pengguna',    'icon' => 'bi-people',        'url' => base_url('modules/utilitas/pengguna/index.php')],
         ['slug' => 'role',         'nama' => 'Role & Otorisasi',   'icon' => 'bi-shield-lock',   'url' => base_url('modules/utilitas/role/index.php')],
+        ['slug' => 'profil',       'nama' => 'Profil Saya',        'icon' => 'bi-person-circle', 'url' => base_url('modules/profil/index.php')],
     ];
 }
 
